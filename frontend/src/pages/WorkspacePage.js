@@ -1,32 +1,36 @@
 import React from 'react';
-import { Box, Container, Typography } from '@mui/material';
-import ReactFlow, { Background, Controls, MiniMap } from 'reactflow';
-import 'reactflow/dist/style.css';
+import { Box, useTheme, useMediaQuery } from '@mui/material';
+import { ReactFlow, Background, Controls, MiniMap } from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import useWorkspaceStore from '../store/workspaceStore';
+import useThemeStore from '../store/themeStore';
 
 function WorkspacePage() {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useWorkspaceStore();
+  const { mode } = useThemeStore();
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
+  // Determine the colorMode for ReactFlow
+  const colorMode = mode === 'system'
+    ? (prefersDarkMode ? 'dark' : 'light')
+    : mode;
 
   return (
-    <Container sx={{ py: 4, height: 'calc(100vh - 64px)' }} maxWidth={false}>
-      <Typography variant="h4" gutterBottom>
-        Workspace
-      </Typography>
-      <Box sx={{ height: '100%', borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          fitView
-        >
-          <MiniMap />
-          <Controls />
-          <Background />
-        </ReactFlow>
-      </Box>
-    </Container>
+    <Box sx={{ height: '100%', width: '100%', overflow: 'hidden' }}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        colorMode={colorMode}
+        fitView
+      >
+        <MiniMap />
+        <Controls />
+        <Background />
+      </ReactFlow>
+    </Box>
   );
 }
 
