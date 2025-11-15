@@ -17,6 +17,7 @@ const NumberSliderNode = ({ data, id }) => {
   const nickname = data.nickname || 'Slider';
 
   const handleSliderChange = useCallback((e) => {
+    e.stopPropagation();
     const newValue = parseFloat(e.target.value);
     setValue(newValue);
     
@@ -26,8 +27,34 @@ const NumberSliderNode = ({ data, id }) => {
     }
   }, [id, data]);
 
+  // Prevent node dragging when interacting with slider
+  const handleSliderMouseDown = useCallback((e) => {
+    e.stopPropagation();
+  }, []);
+
+  const handleSliderPointerDown = useCallback((e) => {
+    e.stopPropagation();
+  }, []);
+
+  const handleSliderClick = useCallback((e) => {
+    e.stopPropagation();
+  }, []);
+
+  const handleSliderTouchStart = useCallback((e) => {
+    e.stopPropagation();
+  }, []);
+
   const handleInputChange = useCallback((e) => {
+    e.stopPropagation();
     setTempValue(e.target.value);
+  }, []);
+
+  const handleInputMouseDown = useCallback((e) => {
+    e.stopPropagation();
+  }, []);
+
+  const handleInputPointerDown = useCallback((e) => {
+    e.stopPropagation();
   }, []);
 
   const handleInputBlur = useCallback(() => {
@@ -60,6 +87,7 @@ const NumberSliderNode = ({ data, id }) => {
         position={Position.Right}
         id="output"
         className="node-handle"
+        isConnectable={true}
       />
 
       <div className="node-header">
@@ -76,15 +104,20 @@ const NumberSliderNode = ({ data, id }) => {
             onChange={handleInputChange}
             onBlur={handleInputBlur}
             onKeyDown={handleInputKeyDown}
+            onMouseDown={handleInputMouseDown}
+            onPointerDown={handleInputPointerDown}
             autoFocus
           />
         ) : (
           <div 
             className="slider-value-display"
-            onDoubleClick={() => {
+            onDoubleClick={(e) => {
+              e.stopPropagation();
               setIsEditing(true);
               setTempValue(value.toString());
             }}
+            onMouseDown={handleInputMouseDown}
+            onPointerDown={handleInputPointerDown}
             title="Double-click to edit"
           >
             {value.toFixed(step < 1 ? 2 : 0)}
@@ -99,6 +132,10 @@ const NumberSliderNode = ({ data, id }) => {
           step={step}
           value={value}
           onChange={handleSliderChange}
+          onMouseDown={handleSliderMouseDown}
+          onPointerDown={handleSliderPointerDown}
+          onClick={handleSliderClick}
+          onTouchStart={handleSliderTouchStart}
           className="slider-input"
         />
 

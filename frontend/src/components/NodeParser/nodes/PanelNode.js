@@ -34,6 +34,7 @@ const PanelNode = ({ data, id }) => {
           position={Position.Left}
           id="input"
           className="node-handle"
+          isConnectable={true}
         />
       )}
 
@@ -68,6 +69,7 @@ const PanelNode = ({ data, id }) => {
         position={Position.Right}
         id="output"
         className="node-handle"
+        isConnectable={true}
       />
 
       <div className="node-category">Params &gt; Input</div>

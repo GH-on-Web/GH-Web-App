@@ -9,7 +9,8 @@ const BooleanToggleNode = ({ data, id }) => {
   const [value, setValue] = useState(data.value !== undefined ? data.value : false);
   const nickname = data.nickname || 'Toggle';
 
-  const handleToggle = useCallback(() => {
+  const handleToggle = useCallback((e) => {
+    e.stopPropagation();
     const newValue = !value;
     setValue(newValue);
     
@@ -17,6 +18,14 @@ const BooleanToggleNode = ({ data, id }) => {
       data.onChange(id, newValue);
     }
   }, [value, id, data]);
+
+  const handleMouseDown = useCallback((e) => {
+    e.stopPropagation();
+  }, []);
+
+  const handlePointerDown = useCallback((e) => {
+    e.stopPropagation();
+  }, []);
 
   return (
     <div className="interactive-node boolean-node">
@@ -26,6 +35,7 @@ const BooleanToggleNode = ({ data, id }) => {
         position={Position.Right}
         id="output"
         className="node-handle"
+        isConnectable={true}
       />
 
       <div className="node-header">
@@ -36,6 +46,8 @@ const BooleanToggleNode = ({ data, id }) => {
         <button
           className={`boolean-toggle ${value ? 'active' : ''}`}
           onClick={handleToggle}
+          onMouseDown={handleMouseDown}
+          onPointerDown={handlePointerDown}
         >
           <div className="toggle-track">
             <div className="toggle-thumb"></div>
@@ -56,13 +68,22 @@ const ButtonNode = ({ data, id }) => {
   const [clickCount, setClickCount] = useState(0);
   const nickname = data.nickname || 'Button';
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback((e) => {
+    e.stopPropagation();
     setClickCount(prev => prev + 1);
     
     if (data.onClick) {
       data.onClick(id);
     }
   }, [id, data]);
+
+  const handleMouseDown = useCallback((e) => {
+    e.stopPropagation();
+  }, []);
+
+  const handlePointerDown = useCallback((e) => {
+    e.stopPropagation();
+  }, []);
 
   return (
     <div className="interactive-node button-node">
@@ -72,6 +93,7 @@ const ButtonNode = ({ data, id }) => {
         position={Position.Right}
         id="output"
         className="node-handle"
+        isConnectable={true}
       />
 
       <div className="node-header">
@@ -79,7 +101,12 @@ const ButtonNode = ({ data, id }) => {
       </div>
 
       <div className="button-container">
-        <button className="action-button" onClick={handleClick}>
+        <button 
+          className="action-button" 
+          onClick={handleClick}
+          onMouseDown={handleMouseDown}
+          onPointerDown={handlePointerDown}
+        >
           <span className="button-icon">▶</span>
           <span className="button-text">Press</span>
         </button>
@@ -103,7 +130,16 @@ const NumberInputNode = ({ data, id }) => {
   const nickname = data.nickname || 'Number';
 
   const handleChange = useCallback((e) => {
+    e.stopPropagation();
     setTempValue(e.target.value);
+  }, []);
+
+  const handleMouseDown = useCallback((e) => {
+    e.stopPropagation();
+  }, []);
+
+  const handlePointerDown = useCallback((e) => {
+    e.stopPropagation();
   }, []);
 
   const handleBlur = useCallback(() => {
@@ -152,6 +188,7 @@ const NumberInputNode = ({ data, id }) => {
         position={Position.Right}
         id="output"
         className="node-handle"
+        isConnectable={true}
       />
 
       <div className="node-header">
@@ -167,15 +204,20 @@ const NumberInputNode = ({ data, id }) => {
             onChange={handleChange}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
+            onMouseDown={handleMouseDown}
+            onPointerDown={handlePointerDown}
             autoFocus
           />
         ) : (
           <div
             className="number-display"
-            onDoubleClick={() => {
+            onDoubleClick={(e) => {
+              e.stopPropagation();
               setIsEditing(true);
               setTempValue(value.toString());
             }}
+            onMouseDown={handleMouseDown}
+            onPointerDown={handlePointerDown}
             title="Double-click to edit, arrow keys to increment"
           >
             {value}
