@@ -3,19 +3,18 @@ import axios from 'axios';
 
 const router = Router();
 
-const { RHINO_COMPUTE_URL, RHINO_COMPUTE_KEY } = process.env;
-
-if (!RHINO_COMPUTE_URL) {
-  console.warn('[backend-compute-gateway] RHINO_COMPUTE_URL is not set. Compute proxy will not work until configured.');
-}
-
 router.all('/*', async (req, res, next) => {
+  const { RHINO_COMPUTE_URL, RHINO_COMPUTE_KEY } = process.env;
+  
   if (!RHINO_COMPUTE_URL) {
+    console.warn('[backend-compute-gateway] RHINO_COMPUTE_URL is not configured');
     return res.status(500).json({ error: { message: 'RHINO_COMPUTE_URL is not configured on the backend.' } });
   }
 
   try {
     const targetUrl = `${RHINO_COMPUTE_URL}${req.originalUrl.replace(/^\/compute/, '')}`;
+    
+    console.log(`[compute] ${req.method} ${req.originalUrl} -> ${targetUrl}`);
 
     const headers = {
       ...req.headers,
@@ -35,8 +34,10 @@ router.all('/*', async (req, res, next) => {
       validateStatus: () => true,
     });
 
+    console.log(`[compute] response ${response.status}`);
     res.status(response.status).set(response.headers).send(response.data);
   } catch (err) {
+    console.error('[compute] error:', err.message);
     next(err);
   }
 });

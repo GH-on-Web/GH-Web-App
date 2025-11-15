@@ -4,6 +4,7 @@ import { AppBar, Toolbar, Typography, Button, Box, Container } from '@mui/materi
 import HomePage from './pages/HomePage';
 import WorkspacePage from './pages/WorkspacePage';
 import DocumentationPage from './pages/DocumentationPage';
+import ComputeTestPage from './pages/ComputeTestPage';
 import './App.css';
 
 function App() {
@@ -24,6 +25,9 @@ function App() {
             <Button color="inherit" component={Link} to="/docs">
               Docs
             </Button>
+            <Button color="inherit" component={Link} to="/compute-test">
+              Compute Test
+            </Button>
           </Toolbar>
         </AppBar>
         <Box component="main" sx={{ flexGrow: 1 }}>
@@ -31,6 +35,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/workspace" element={<WorkspacePage />} />
             <Route path="/docs" element={<DocumentationPage />} />
+            <Route path="/compute-test" element={<ComputeTestPage />} />
           </Routes>
         </Box>
         <Box component="footer" sx={{ py: 2, borderTop: 1, borderColor: 'divider' }}>

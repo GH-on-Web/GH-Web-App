@@ -1,13 +1,14 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 import healthRouter from './routes/health.js';
-import computeRouter from './routes/computeProxy.js';
+import computeRouter from './routes/compute.js';
 import scriptsRouter from './routes/scripts.js';
 import utilityScriptsRouter from './routes/utilityScripts.js';
-
-dotenv.config();
+import versionRouter from './routes/version.js';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use('/health', healthRouter);
 app.use('/scripts', scriptsRouter);
 app.use('/utility', utilityScriptsRouter);
 app.use('/compute', computeRouter);
+app.use('/version', versionRouter);
 
 app.use((err, req, res, next) => {
   console.error('[Error]', err);
@@ -29,7 +31,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4001;
 
 app.listen(PORT, () => {
   console.log(`backend-compute-gateway listening on port ${PORT}`);

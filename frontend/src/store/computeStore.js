@@ -1,17 +1,24 @@
 import { create } from 'zustand';
 
-const DEFAULT_BASE_URL = process.env.REACT_APP_COMPUTE_GATEWAY_URL || 'http://localhost:4000';
+const DEFAULT_BASE_URL = process.env.REACT_APP_COMPUTE_GATEWAY_URL || 'http://localhost:4001';
 
 async function request(path, options = {}) {
   const baseUrl = DEFAULT_BASE_URL.replace(/\/$/, '');
   const url = `${baseUrl}${path}`;
+  const fetchOptions = { ...options };
+  const skipContentType = fetchOptions.skipContentType;
+  const optionHeaders = fetchOptions.headers;
+  delete fetchOptions.headers;
+  delete fetchOptions.skipContentType;
+
+  const headers = { ...(optionHeaders || {}) };
+  if (!skipContentType && !headers['Content-Type'] && typeof fetchOptions.body === 'string') {
+    headers['Content-Type'] = 'application/json';
+  }
 
   const res = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
-    ...options,
+    headers,
+    ...fetchOptions,
   });
 
   const contentType = res.headers.get('content-type') || '';
@@ -48,7 +55,7 @@ const useComputeStore = create((set, get) => ({
   },
 
   async parseGhToJson(payload) {
-    return request('/utility/parse-gh-to-json', {
+    return request('/scripts/compute-gh-to-json', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -56,7 +63,7 @@ const useComputeStore = create((set, get) => ({
 
   async jsonToGh(payload) {
     // Returns an ArrayBuffer for the GH file; UI can turn it into a Blob/download.
-    return request('/utility/json-to-gh', {
+    return request('/scripts/compute-json-to-gh', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -68,6 +75,28 @@ const useComputeStore = create((set, get) => ({
       method: 'POST',
       body: JSON.stringify(payload),
     });
+  },
+
+  async proxyGhFile(file, targetPath = '') {
+    if (!file) {
+      throw new Error('Drop a GH file before running the proxy test.');
+    }
+    const normalized = targetPath ? (targetPath.startsWith('/') ? targetPath : `/${targetPath}`) : '';
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return request(`/compute${normalized}`, {
+      method: 'POST',
+      body: form,
+      skipContentType: true,
+    });
+  },
+
+  async fetchVersion() {
+    return request('/version');
+  },
+
+  async fetchHealth() {
+    return request('/health/alive');
   },
 }));
 

@@ -3,13 +3,8 @@ import axios from 'axios';
 
 const router = Router();
 
-const { RHINO_COMPUTE_URL, RHINO_COMPUTE_KEY } = process.env;
-
-if (!RHINO_COMPUTE_URL) {
-  console.warn('[backend-compute-gateway] RHINO_COMPUTE_URL is not set. Utility script endpoints will not work until configured.');
-}
-
 function buildHeaders(extra = {}) {
+  const { RHINO_COMPUTE_KEY } = process.env;
   const headers = { ...extra };
   if (RHINO_COMPUTE_KEY) {
     headers['Authorization'] = `Bearer ${RHINO_COMPUTE_KEY}`;
@@ -21,19 +16,24 @@ function buildHeaders(extra = {}) {
 // Expects body like: { ghPath: string, ...otherInputs }
 // Forwards to: `${RHINO_COMPUTE_URL}/utility/parse-gh-to-json`
 router.post('/parse-gh-to-json', async (req, res, next) => {
+  const { RHINO_COMPUTE_URL } = process.env;
+  
   if (!RHINO_COMPUTE_URL) {
     return res.status(500).json({ error: { message: 'RHINO_COMPUTE_URL is not configured on the backend.' } });
   }
 
   try {
     const targetUrl = `${RHINO_COMPUTE_URL}/utility/parse-gh-to-json`;
+    console.log(`[utility] parse-gh-to-json -> ${targetUrl}`);
     const response = await axios.post(targetUrl, req.body, {
       headers: buildHeaders({ 'Content-Type': 'application/json' }),
       validateStatus: () => true,
     });
 
+    console.log(`[utility] parse-gh-to-json response ${response.status}`);
     res.status(response.status).json(response.data);
   } catch (err) {
+    console.error('[utility] parse-gh-to-json error:', err.message);
     next(err);
   }
 });
@@ -42,18 +42,22 @@ router.post('/parse-gh-to-json', async (req, res, next) => {
 // Expects body like: { definitionJson: {...} }
 // Forwards to: `${RHINO_COMPUTE_URL}/utility/json-to-gh`
 router.post('/json-to-gh', async (req, res, next) => {
+  const { RHINO_COMPUTE_URL } = process.env;
+  
   if (!RHINO_COMPUTE_URL) {
     return res.status(500).json({ error: { message: 'RHINO_COMPUTE_URL is not configured on the backend.' } });
   }
 
   try {
     const targetUrl = `${RHINO_COMPUTE_URL}/utility/json-to-gh`;
+    console.log(`[utility] json-to-gh -> ${targetUrl}`);
     const response = await axios.post(targetUrl, req.body, {
       headers: buildHeaders({ 'Content-Type': 'application/json' }),
       responseType: 'arraybuffer',
       validateStatus: () => true,
     });
 
+    console.log(`[utility] json-to-gh response ${response.status}`);
     // Pass through status and send as a GH file download by default
     res
       .status(response.status)
@@ -63,6 +67,7 @@ router.post('/json-to-gh', async (req, res, next) => {
       })
       .send(response.data);
   } catch (err) {
+    console.error('[utility] json-to-gh error:', err.message);
     next(err);
   }
 });

@@ -10,4 +10,8 @@ router.get('/', (req, res) => {
   });
 });
 
+router.get('/alive', (req, res) => {
+  res.type('text/plain').send('alive');
+});
+
 export default router;
