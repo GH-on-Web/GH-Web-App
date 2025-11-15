@@ -26,7 +26,11 @@ import {
   createButtonData,
   createNumberInputData
 } from './nodes';
-import { parseGrasshopperGraph, parseGrasshopperComponent } from '../../utils/nodeParser';
+import { 
+  parseGrasshopperGraph, 
+  parseGrasshopperComponent,
+  parseSimplifiedGraph 
+} from '../../utils/nodeParser';
 import { ConnectionManager, convertReactFlowConnection } from '../../utils/connectionManager';
 import './NodeParser.css';
 
@@ -190,7 +194,21 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
   React.useEffect(() => {
     if (graphData) {
       try {
-        const { nodes: parsedNodes, edges: parsedEdges } = parseGrasshopperGraph(graphData);
+        let parsedNodes, parsedEdges;
+        
+        // Detect format: simplified format has "nodes" and "links"
+        // Old format has "componentInstances" and "connections"
+        if (graphData.nodes && graphData.links) {
+          // Use simplified parser
+          const result = parseSimplifiedGraph(graphData, componentsDatabase || []);
+          parsedNodes = result.nodes;
+          parsedEdges = result.edges;
+        } else {
+          // Use old parser for backward compatibility
+          const result = parseGrasshopperGraph(graphData);
+          parsedNodes = result.nodes;
+          parsedEdges = result.edges;
+        }
         
         // Only update nodes if this is initial load or if the node count changed
         const nodesChanged = parsedNodes.length !== nodes.length;
@@ -214,7 +232,7 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
         setError('Failed to parse graph data: ' + err.message);
       }
     }
-  }, [graphData, setNodes, setEdges, nodes.length]);
+  }, [graphData, setNodes, setEdges, nodes.length, componentsDatabase]);
 
   // Handle connection creation or deletion (Ctrl+drag deletes existing connection)
   const onConnect = useCallback(

@@ -81,6 +81,7 @@
   background: #f8f9fa;
   border-radius: 6px;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .slider-value-input {
@@ -164,6 +165,7 @@
   resize: vertical;
   outline: none;
   background: #fafafa;
+  box-sizing: border-box;
 }
 
 .panel-display {
@@ -179,6 +181,7 @@
   word-break: break-word;
   cursor: text;
   transition: background 0.2s;
+  box-sizing: border-box;
 }
 
 .panel-display:hover {
@@ -333,6 +336,7 @@
   outline: none;
   background: #fafafa;
   color: #2c3e50;
+  box-sizing: border-box;
 }
 
 .number-display {
@@ -347,6 +351,7 @@
   cursor: pointer;
   transition: all 0.2s;
   color: #2c3e50;
+  box-sizing: border-box;
 }
 
 .number-display:hover {

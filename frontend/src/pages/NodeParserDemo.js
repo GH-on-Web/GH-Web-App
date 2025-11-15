@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { NodeParser } from '../components/NodeParser';
 import exampleData from '../data/exampleGraph.json';
 import exampleDataInteractive from '../data/exampleGraphInteractive.json';
+import testScript1 from '../data/Test-Script-1.json';
 import './NodeParserDemo.css';
 
 /**
  * Demo page for the NodeParser component with real GH component structure
  */
 const NodeParserDemo = () => {
-  const [jsonInput, setJsonInput] = useState(JSON.stringify(exampleDataInteractive, null, 2));
-  const [currentData, setCurrentData] = useState(exampleDataInteractive);
+  const [jsonInput, setJsonInput] = useState(JSON.stringify(testScript1, null, 2));
+  const [currentData, setCurrentData] = useState(testScript1);
   const [parseError, setParseError] = useState(null);
-  const [connections, setConnections] = useState(exampleDataInteractive.connections || []);
+  const [connections, setConnections] = useState(testScript1.links || []);
   const [componentsDatabase, setComponentsDatabase] = useState([]);
   const [isLoadingDatabase, setIsLoadingDatabase] = useState(true);
 
@@ -71,9 +72,9 @@ const NodeParserDemo = () => {
   };
 
   const handleLoadExample = () => {
-    setJsonInput(JSON.stringify(exampleDataInteractive, null, 2));
-    setCurrentData(exampleDataInteractive);
-    setConnections(exampleDataInteractive.connections || []);
+    setJsonInput(JSON.stringify(testScript1, null, 2));
+    setCurrentData(testScript1);
+    setConnections(testScript1.links || []);
     setParseError(null);
   };
 
@@ -83,12 +84,20 @@ const NodeParserDemo = () => {
     setConnections(exampleData.connections || []);
     setParseError(null);
   };
+  
+  const handleLoadInteractiveExample = () => {
+    setJsonInput(JSON.stringify(exampleDataInteractive, null, 2));
+    setCurrentData(exampleDataInteractive);
+    setConnections(exampleDataInteractive.connections || []);
+    setParseError(null);
+  };
 
   const handleParseJson = () => {
     try {
       const parsed = JSON.parse(jsonInput);
       setCurrentData(parsed);
-      setConnections(parsed.connections || []);
+      // Handle both formats: old format has "connections", new format has "links"
+      setConnections(parsed.connections || parsed.links || []);
       setParseError(null);
     } catch (err) {
       setParseError('Invalid JSON: ' + err.message);
@@ -96,7 +105,7 @@ const NodeParserDemo = () => {
   };
 
   const handleClear = () => {
-    const emptyData = { componentInstances: [], connections: [] };
+    const emptyData = { nodes: [], links: [] };
     setJsonInput(JSON.stringify(emptyData, null, 2));
     setCurrentData(emptyData);
     setConnections([]);
@@ -105,62 +114,156 @@ const NodeParserDemo = () => {
 
   const handleConnectionsChange = (newConnections) => {
     setConnections(newConnections);
+    
+    // Detect format and update accordingly
+    const isSimplifiedFormat = currentData.nodes && currentData.links;
+    
     // Update current data with new connections to keep them in sync
-    const updatedData = {
-      ...currentData,
-      connections: newConnections
-    };
+    const updatedData = isSimplifiedFormat
+      ? {
+          ...currentData,
+          links: newConnections
+        }
+      : {
+          ...currentData,
+          connections: newConnections
+        };
+    
     setCurrentData(updatedData);
     setJsonInput(JSON.stringify(updatedData, null, 2));
   };
 
   const handleNodesChange = (newNodes, newComponentInstance, deletedNodeIds, isPositionUpdate) => {
+    // Detect format
+    const isSimplifiedFormat = currentData.nodes && currentData.links;
+    
     // If nodes are being deleted
     if (deletedNodeIds && deletedNodeIds.length > 0) {
-      const updatedInstances = currentData.componentInstances?.filter(
-        inst => !deletedNodeIds.includes(`node-${inst.instanceId}`)
-      ) || [];
-      
-      const updatedData = {
-        componentInstances: updatedInstances,
-        connections: connections
-      };
-      setCurrentData(updatedData);
-      setJsonInput(JSON.stringify(updatedData, null, 2));
+      if (isSimplifiedFormat) {
+        const updatedNodes = currentData.nodes?.filter(
+          node => !deletedNodeIds.includes(`node-${node.id}`)
+        ) || [];
+        
+        const updatedData = {
+          nodes: updatedNodes,
+          links: currentData.links || []
+        };
+        setCurrentData(updatedData);
+        setJsonInput(JSON.stringify(updatedData, null, 2));
+      } else {
+        const updatedInstances = currentData.componentInstances?.filter(
+          inst => !deletedNodeIds.includes(`node-${inst.instanceId}`)
+        ) || [];
+        
+        const updatedData = {
+          componentInstances: updatedInstances,
+          connections: connections
+        };
+        setCurrentData(updatedData);
+        setJsonInput(JSON.stringify(updatedData, null, 2));
+      }
       return;
     }
     
     // If a new component instance is being added
     if (newComponentInstance) {
-      const updatedInstances = [...(currentData.componentInstances || []), newComponentInstance];
-      const updatedData = {
-        componentInstances: updatedInstances,
-        connections: connections
-      };
-      setCurrentData(updatedData);
-      setJsonInput(JSON.stringify(updatedData, null, 2));
+      if (isSimplifiedFormat) {
+        // Convert newComponentInstance to simplified format
+        const reactFlowNode = newNodes?.find(n => n.id === `node-${newComponentInstance.instanceId}`);
+        
+        if (reactFlowNode) {
+          const newSimplifiedNode = {
+            id: newComponentInstance.instanceId,
+            guid: reactFlowNode.data.guid,
+            nickname: reactFlowNode.data.nickname || reactFlowNode.data.name,
+            x: newComponentInstance.position.x,
+            y: newComponentInstance.position.y,
+            properties: {}
+          };
+          
+          // Add properties for interactive nodes
+          if (reactFlowNode.type === 'numberSlider') {
+            newSimplifiedNode.properties = {
+              Min: reactFlowNode.data.min || 0,
+              Max: reactFlowNode.data.max || 100,
+              Step: reactFlowNode.data.step || 1,
+              Value: reactFlowNode.data.value || 0
+            };
+          } else if (reactFlowNode.type === 'panel') {
+            newSimplifiedNode.properties = {
+              Text: reactFlowNode.data.text || '',
+              IsInput: reactFlowNode.data.isInput || false
+            };
+          } else if (reactFlowNode.type === 'booleanToggle') {
+            newSimplifiedNode.properties = {
+              Value: reactFlowNode.data.value || false
+            };
+          } else if (reactFlowNode.type === 'numberInput') {
+            newSimplifiedNode.properties = {
+              Value: reactFlowNode.data.value || 0
+            };
+          }
+          
+          const updatedNodes = [...(currentData.nodes || []), newSimplifiedNode];
+          const updatedData = {
+            nodes: updatedNodes,
+            links: currentData.links || []
+          };
+          setCurrentData(updatedData);
+          setJsonInput(JSON.stringify(updatedData, null, 2));
+        }
+      } else {
+        const updatedInstances = [...(currentData.componentInstances || []), newComponentInstance];
+        const updatedData = {
+          componentInstances: updatedInstances,
+          connections: connections
+        };
+        setCurrentData(updatedData);
+        setJsonInput(JSON.stringify(updatedData, null, 2));
+      }
       return;
     }
     
     // If this is a position update (node drag), update positions without triggering re-parse
     if (isPositionUpdate && newNodes) {
-      const updatedInstances = currentData.componentInstances?.map(inst => {
-        const node = newNodes.find(n => n.id === `node-${inst.instanceId}`);
-        if (node && node.position) {
-          return {
-            ...inst,
-            position: node.position
-          };
-        }
-        return inst;
-      }) || [];
-      
-      const updatedData = {
-        componentInstances: updatedInstances,
-        connections: connections
-      };
-      setCurrentData(updatedData);
-      setJsonInput(JSON.stringify(updatedData, null, 2));
+      if (isSimplifiedFormat) {
+        const updatedNodes = currentData.nodes?.map(node => {
+          const reactFlowNode = newNodes.find(n => n.id === `node-${node.id}`);
+          if (reactFlowNode && reactFlowNode.position) {
+            return {
+              ...node,
+              x: reactFlowNode.position.x,
+              y: reactFlowNode.position.y
+            };
+          }
+          return node;
+        }) || [];
+        
+        const updatedData = {
+          nodes: updatedNodes,
+          links: currentData.links || []
+        };
+        setCurrentData(updatedData);
+        setJsonInput(JSON.stringify(updatedData, null, 2));
+      } else {
+        const updatedInstances = currentData.componentInstances?.map(inst => {
+          const node = newNodes.find(n => n.id === `node-${inst.instanceId}`);
+          if (node && node.position) {
+            return {
+              ...inst,
+              position: node.position
+            };
+          }
+          return inst;
+        }) || [];
+        
+        const updatedData = {
+          componentInstances: updatedInstances,
+          connections: connections
+        };
+        setCurrentData(updatedData);
+        setJsonInput(JSON.stringify(updatedData, null, 2));
+      }
       return;
     }
     
@@ -209,10 +312,13 @@ const NodeParserDemo = () => {
             📁 Load File
           </button>
           <button onClick={handleLoadExample} className="btn btn-example">
-            Load Interactive Example
+            Load Test Script 1 (Simplified)
+          </button>
+          <button onClick={handleLoadInteractiveExample} className="btn btn-example">
+            Load Interactive Example (Old)
           </button>
           <button onClick={handleLoadVanillaExample} className="btn btn-example">
-            Load Standard Example
+            Load Standard Example (Old)
           </button>
           <button onClick={handleParseJson} className="btn btn-primary">
             Parse & Render
@@ -263,31 +369,36 @@ const NodeParserDemo = () => {
         </div>
 
         <div className="demo-info">
-          <h3>Structure:</h3>
+          <h3>Simplified Format (Test-Script-1.json):</h3>
           <pre>{`{
-  "componentInstances": [
+  "nodes": [
     {
-      "instanceId": "1",
-      "position": {"x": 100, "y": 100},
-      "component": {
-        "Guid": "...",
-        "Name": "Component Name",
-        "Nickname": "Nick",
-        "Category": "Category",
-        "SubCategory": "SubCategory",
-        "Inputs": [...],
-        "Outputs": [...]
+      "id": "slider_x",
+      "guid": "57da07bd-ecab-415d-9d86-af36d7073abc",
+      "nickname": "X",
+      "x": 40,
+      "y": 40,
+      "properties": {
+        "Min": -10.0,
+        "Max": 10.0,
+        "Value": 2.0
       }
     }
   ],
-  "connections": [
+  "links": [
     {
-      "sourceNodeId": "node-1",
-      "sourceHandleIndex": 0,
-      "targetNodeId": "node-2",
-      "targetHandleIndex": 0
+      "fromNode": "slider_x",
+      "fromParam": "0",
+      "toNode": "pt",
+      "toParam": "X"
     }
   ]
+}
+
+// Old Format (for backward compatibility):
+{
+  "componentInstances": [...],
+  "connections": [...]
 }`}</pre>
         </div>
       </div>
