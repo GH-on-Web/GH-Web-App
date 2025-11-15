@@ -12,8 +12,8 @@ import 'reactflow/dist/style.css';
 
 import GrasshopperNode from './GrasshopperNode';
 import ComponentSearch from './ComponentSearch';
-import { parseGrasshopperGraph, parseGrasshopperComponent } from '../utils/nodeParser';
-import { ConnectionManager, convertReactFlowConnection } from '../utils/connectionManager';
+import { parseGrasshopperGraph, parseGrasshopperComponent } from '../../utils/nodeParser';
+import { ConnectionManager, convertReactFlowConnection } from '../../utils/connectionManager';
 import './NodeParser.css';
 
 /**

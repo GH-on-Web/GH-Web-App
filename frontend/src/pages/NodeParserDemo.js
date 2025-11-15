@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import NodeParser from '../components/NodeParser';
+import { NodeParser } from '../components/NodeParser';
 import exampleData from '../data/exampleGraph.json';
 import './NodeParserDemo.css';
 
