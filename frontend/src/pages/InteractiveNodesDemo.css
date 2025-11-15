@@ -1,0 +1,270 @@
+.interactive-demo {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.demo-sidebar {
+  width: 300px;
+  background: white;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+  padding: 20px;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.demo-sidebar h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  color: #1a192b;
+}
+
+.demo-description {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.component-buttons {
+  margin-bottom: 24px;
+}
+
+.component-buttons h3 {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.component-buttons .btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.component-buttons .btn:hover {
+  border-color: #3498db;
+  background: #f8f9fa;
+  transform: translateX(4px);
+}
+
+.component-buttons .btn:active {
+  transform: translateX(2px);
+}
+
+.btn-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+.btn-slider { border-left: 4px solid #3498db; }
+.btn-number { border-left: 4px solid #9b59b6; }
+.btn-panel { border-left: 4px solid #f39c12; }
+.btn-toggle { border-left: 4px solid #27ae60; }
+.btn-button { border-left: 4px solid #e74c3c; }
+
+.demo-controls {
+  margin-bottom: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.btn-clear {
+  width: 100%;
+  padding: 10px 16px;
+  border: 2px solid #e74c3c;
+  border-radius: 6px;
+  background: white;
+  color: #e74c3c;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-clear:hover {
+  background: #e74c3c;
+  color: white;
+}
+
+.output-log {
+  margin-bottom: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.output-log h3 {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.log-container {
+  max-height: 200px;
+  overflow-y: auto;
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.log-empty {
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+  padding: 20px;
+}
+
+.log-entry {
+  display: flex;
+  gap: 8px;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  background: white;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  border-left: 3px solid #3498db;
+}
+
+.log-time {
+  color: #999;
+  min-width: 70px;
+}
+
+.log-node {
+  color: #3498db;
+  font-weight: 600;
+  min-width: 60px;
+}
+
+.log-value {
+  color: #27ae60;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.demo-info {
+  margin-bottom: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.demo-info h3 {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.demo-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.demo-info li {
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.stats {
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.stats h3 {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #3498db;
+}
+
+.demo-canvas {
+  flex: 1;
+  position: relative;
+}
+
+/* Scrollbar styling */
+.demo-sidebar::-webkit-scrollbar,
+.log-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.demo-sidebar::-webkit-scrollbar-track,
+.log-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.demo-sidebar::-webkit-scrollbar-thumb,
+.log-container::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.demo-sidebar::-webkit-scrollbar-thumb:hover,
+.log-container::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .interactive-demo {
+    flex-direction: column;
+  }
+
+  .demo-sidebar {
+    width: 100%;
+    max-height: 300px;
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .demo-canvas {
+    height: calc(100vh - 300px);
+  }
+}

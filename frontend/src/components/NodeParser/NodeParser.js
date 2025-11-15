@@ -12,9 +12,133 @@ import 'reactflow/dist/style.css';
 
 import GrasshopperNode from './GrasshopperNode';
 import ComponentSearch from './ComponentSearch';
+import { 
+  NumberSliderNode, 
+  PanelNode, 
+  BooleanToggleNode, 
+  ButtonNode, 
+  NumberInputNode 
+} from './nodes';
+import { 
+  createSliderNodeData,
+  createPanelNodeData,
+  createBooleanToggleData,
+  createButtonData,
+  createNumberInputData
+} from './nodes';
 import { parseGrasshopperGraph, parseGrasshopperComponent } from '../../utils/nodeParser';
 import { ConnectionManager, convertReactFlowConnection } from '../../utils/connectionManager';
 import './NodeParser.css';
+
+/**
+ * Maps Grasshopper component GUIDs/Names to interactive node types
+ */
+const INTERACTIVE_NODE_MAPPING = {
+  // Number Slider - GUID from Grasshopper
+  '57da07bd-ecab-415d-9d86-af36d7073abc': 'numberSlider',
+  // Panel
+  '59e0b89a-e487-49f8-bab8-b5bab16be14c': 'panel',
+  // Boolean Toggle
+  '2e78987b-9dfb-42a2-8b76-3923ac8bd91a': 'booleanToggle',
+  // Button
+  'a8b97322-2d53-47cd-905e-b932c3ccd74e': 'button',
+  // Number (primitive)
+  '3e8ca6be-fda8-4aaf-b5c0-3c54c8bb7312': 'numberInput'
+};
+
+/**
+ * Creates an interactive node based on component type
+ */
+const createInteractiveNode = (component, instanceId, position) => {
+  const nodePosition = position || { x: 100, y: 100 };
+  const nodeId = `node-${instanceId}`;
+  
+  let nodeData = {
+    id: nodeId,
+    nickname: component.Nickname || component.Name || 'Node'
+  };
+  
+  const guid = component.Guid;
+  const nodeType = INTERACTIVE_NODE_MAPPING[guid];
+  
+  switch (nodeType) {
+    case 'numberSlider':
+      return {
+        id: nodeId,
+        type: 'numberSlider',
+        position: nodePosition,
+        data: {
+          ...createSliderNodeData({
+            nickname: component.Nickname || 'Slider',
+            min: 0,
+            max: 100,
+            step: 1,
+            value: 50
+          }),
+          id: nodeId
+        }
+      };
+      
+    case 'panel':
+      return {
+        id: nodeId,
+        type: 'panel',
+        position: nodePosition,
+        data: {
+          ...createPanelNodeData({
+            nickname: component.Nickname || 'Panel',
+            text: '',
+            isInput: false
+          }),
+          id: nodeId
+        }
+      };
+      
+    case 'booleanToggle':
+      return {
+        id: nodeId,
+        type: 'booleanToggle',
+        position: nodePosition,
+        data: {
+          ...createBooleanToggleData({
+            nickname: component.Nickname || 'Toggle',
+            value: false
+          }),
+          id: nodeId
+        }
+      };
+      
+    case 'button':
+      return {
+        id: nodeId,
+        type: 'button',
+        position: nodePosition,
+        data: {
+          ...createButtonData({
+            nickname: component.Nickname || 'Button'
+          }),
+          id: nodeId
+        }
+      };
+      
+    case 'numberInput':
+      return {
+        id: nodeId,
+        type: 'numberInput',
+        position: nodePosition,
+        data: {
+          ...createNumberInputData({
+            nickname: component.Nickname || 'Number',
+            value: 0
+          }),
+          id: nodeId
+        }
+      };
+      
+    default:
+      return null;
+  }
+};
 
 /**
  * Main NodeParser component that renders Grasshopper components using React Flow
@@ -30,7 +154,14 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
   const nextInstanceId = useRef(1000); // Start from 1000 for new components
 
   // Define custom node types
-  const nodeTypes = useMemo(() => ({ grasshopperNode: GrasshopperNode }), []);
+  const nodeTypes = useMemo(() => ({ 
+    grasshopperNode: GrasshopperNode,
+    numberSlider: NumberSliderNode,
+    panel: PanelNode,
+    booleanToggle: BooleanToggleNode,
+    button: ButtonNode,
+    numberInput: NumberInputNode
+  }), []);
 
   // Track Ctrl/Cmd key state
   React.useEffect(() => {
@@ -189,14 +320,36 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
       // Calculate center position of the viewport
       const centerX = window.innerWidth / 2 - 200; // Offset for sidebar
       const centerY = window.innerHeight / 2;
+      const position = { x: centerX, y: centerY };
       
-      // Create new node at center
-      const newNode = parseGrasshopperComponent(component, instanceId, {
-        x: centerX,
-        y: centerY
-      });
+      // Check if this component should be an interactive node
+      const interactiveNode = createInteractiveNode(component, instanceId, position);
       
-      console.log('Adding new component:', component.Name, 'at position:', newNode.position);
+      let newNode;
+      let componentData;
+      
+      if (interactiveNode) {
+        // Use interactive node
+        newNode = interactiveNode;
+        componentData = {
+          instanceId: instanceId.toString(),
+          position: position,
+          component: {
+            type: interactiveNode.type,
+            ...interactiveNode.data
+          }
+        };
+        console.log('Adding interactive node:', interactiveNode.type, 'at position:', position);
+      } else {
+        // Use standard Grasshopper node
+        newNode = parseGrasshopperComponent(component, instanceId, position);
+        componentData = {
+          instanceId: instanceId.toString(),
+          position: position,
+          component: component
+        };
+        console.log('Adding standard component:', component.Name, 'at position:', position);
+      }
       
       // Add to nodes using the functional update to get latest state
       setNodes((currentNodes) => {
@@ -205,11 +358,7 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
         // Notify parent about node addition with the updated list
         if (onNodesChangeCallback) {
           // Pass the component data along with the node
-          onNodesChangeCallback(updated, {
-            instanceId: instanceId.toString(),
-            position: newNode.position,
-            component: component
-          });
+          onNodesChangeCallback(updated, componentData);
         }
         
         return updated;

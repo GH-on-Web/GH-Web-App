@@ -3,6 +3,20 @@ export { default as NodeParser } from './NodeParser';
 export { default as GrasshopperNode } from './GrasshopperNode';
 export { default as ComponentSearch } from './ComponentSearch';
 
+// Interactive Node Components
+export {
+  NumberSliderNode,
+  PanelNode,
+  BooleanToggleNode,
+  ButtonNode,
+  NumberInputNode,
+  createSliderNodeData,
+  createPanelNodeData,
+  createBooleanToggleData,
+  createButtonData,
+  createNumberInputData
+} from './nodes';
+
 // Re-export utilities
 export { 
   parseGrasshopperComponent,

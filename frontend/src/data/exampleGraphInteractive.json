@@ -1,0 +1,94 @@
+{
+  "componentInstances": [
+    {
+      "instanceId": "1",
+      "position": { "x": 100, "y": 100 },
+      "component": {
+        "type": "numberSlider",
+        "nickname": "Width",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "value": 50
+      }
+    },
+    {
+      "instanceId": "2",
+      "position": { "x": 100, "y": 250 },
+      "component": {
+        "type": "numberSlider",
+        "nickname": "Height",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "value": 30
+      }
+    },
+    {
+      "instanceId": "3",
+      "position": { "x": 350, "y": 150 },
+      "component": {
+        "Guid": "a0d62394-a118-422d-abb3-6af115c75b25",
+        "Name": "Addition",
+        "Nickname": "+",
+        "Category": "Maths",
+        "SubCategory": "Operators",
+        "Inputs": [
+          {
+            "Name": "A",
+            "Nickname": "A",
+            "Description": "First item for addition",
+            "TypeName": "Number",
+            "DotNetType": "Grasshopper.Kernel.Parameters.Param_Number"
+          },
+          {
+            "Name": "B",
+            "Nickname": "B",
+            "Description": "Second item for addition",
+            "TypeName": "Number",
+            "DotNetType": "Grasshopper.Kernel.Parameters.Param_Number"
+          }
+        ],
+        "Outputs": [
+          {
+            "Name": "Result",
+            "Nickname": "R",
+            "Description": "Result of addition",
+            "TypeName": "Number",
+            "DotNetType": "Grasshopper.Kernel.Parameters.Param_Number"
+          }
+        ]
+      }
+    },
+    {
+      "instanceId": "4",
+      "position": { "x": 600, "y": 150 },
+      "component": {
+        "type": "panel",
+        "nickname": "Output",
+        "text": "Result will appear here",
+        "isInput": false
+      }
+    }
+  ],
+  "connections": [
+    {
+      "sourceNodeId": "node-1",
+      "sourceHandleIndex": 0,
+      "targetNodeId": "node-3",
+      "targetHandleIndex": 0
+    },
+    {
+      "sourceNodeId": "node-2",
+      "sourceHandleIndex": 0,
+      "targetNodeId": "node-3",
+      "targetHandleIndex": 1
+    },
+    {
+      "sourceNodeId": "node-3",
+      "sourceHandleIndex": 0,
+      "targetNodeId": "node-4",
+      "targetHandleIndex": 0
+    }
+  ]
+}

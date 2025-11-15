@@ -70,6 +70,29 @@ export const parseComponentInstances = (componentInstances) => {
 
   return componentInstances.map((instance) => {
     const { component, instanceId, position } = instance;
+    
+    // Check if this is an interactive node (has a 'type' field that's not grasshopperNode)
+    const interactiveNodeTypes = ['numberSlider', 'panel', 'booleanToggle', 'button', 'numberInput'];
+    
+    if (component.type && interactiveNodeTypes.includes(component.type)) {
+      // For interactive nodes, create a node directly without parsing as Grasshopper component
+      const nodePosition = position || {
+        x: 250 * (instanceId % 4),
+        y: 150 * Math.floor(instanceId / 4)
+      };
+      
+      return {
+        id: `node-${instanceId}`,
+        type: component.type,
+        position: nodePosition,
+        data: {
+          ...component,
+          id: `node-${instanceId}`
+        }
+      };
+    }
+    
+    // For standard Grasshopper components, use the existing parser
     return parseGrasshopperComponent(component, instanceId, position);
   });
 };

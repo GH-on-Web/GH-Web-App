@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { NodeParser } from '../components/NodeParser';
 import exampleData from '../data/exampleGraph.json';
+import exampleDataInteractive from '../data/exampleGraphInteractive.json';
 import './NodeParserDemo.css';
 
 /**
  * Demo page for the NodeParser component with real GH component structure
  */
 const NodeParserDemo = () => {
-  const [jsonInput, setJsonInput] = useState(JSON.stringify(exampleData, null, 2));
-  const [currentData, setCurrentData] = useState(exampleData);
+  const [jsonInput, setJsonInput] = useState(JSON.stringify(exampleDataInteractive, null, 2));
+  const [currentData, setCurrentData] = useState(exampleDataInteractive);
   const [parseError, setParseError] = useState(null);
-  const [connections, setConnections] = useState(exampleData.connections || []);
+  const [connections, setConnections] = useState(exampleDataInteractive.connections || []);
   const [componentsDatabase, setComponentsDatabase] = useState([]);
   const [isLoadingDatabase, setIsLoadingDatabase] = useState(true);
 
@@ -70,6 +71,13 @@ const NodeParserDemo = () => {
   };
 
   const handleLoadExample = () => {
+    setJsonInput(JSON.stringify(exampleDataInteractive, null, 2));
+    setCurrentData(exampleDataInteractive);
+    setConnections(exampleDataInteractive.connections || []);
+    setParseError(null);
+  };
+
+  const handleLoadVanillaExample = () => {
     setJsonInput(JSON.stringify(exampleData, null, 2));
     setCurrentData(exampleData);
     setConnections(exampleData.connections || []);
@@ -201,7 +209,10 @@ const NodeParserDemo = () => {
             📁 Load File
           </button>
           <button onClick={handleLoadExample} className="btn btn-example">
-            Load Example
+            Load Interactive Example
+          </button>
+          <button onClick={handleLoadVanillaExample} className="btn btn-example">
+            Load Standard Example
           </button>
           <button onClick={handleParseJson} className="btn btn-primary">
             Parse & Render

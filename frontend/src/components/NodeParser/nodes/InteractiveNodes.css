@@ -1,0 +1,391 @@
+/* Interactive Nodes Base Styles */
+.interactive-node {
+  background: white;
+  border: 2px solid #1a192b;
+  border-radius: 8px;
+  padding: 8px;
+  min-width: 160px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  transition: box-shadow 0.2s;
+}
+
+.interactive-node:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.interactive-node.selected {
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.3);
+}
+
+.interactive-node .node-header {
+  font-weight: 600;
+  font-size: 13px;
+  color: #1a192b;
+  margin-bottom: 8px;
+  text-align: center;
+  padding: 4px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.interactive-node .node-nickname {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.interactive-node .node-category {
+  font-size: 10px;
+  color: #666;
+  text-align: center;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #eee;
+}
+
+.interactive-node .node-handle {
+  width: 10px;
+  height: 10px;
+  background: #555;
+  border: 2px solid white;
+  border-radius: 50%;
+}
+
+.interactive-node .node-handle:hover {
+  background: #ff6b6b;
+}
+
+/* ============================================ */
+/* Number Slider Node */
+/* ============================================ */
+.slider-node {
+  min-width: 200px;
+}
+
+.slider-container {
+  padding: 8px 4px;
+}
+
+.slider-value-display,
+.slider-value-input {
+  width: 100%;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 12px;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.slider-value-input {
+  border: 2px solid #3498db;
+  outline: none;
+  cursor: text;
+}
+
+.slider-value-display:hover {
+  background: #e9ecef;
+}
+
+.slider-input {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #ddd;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 8px 0;
+  cursor: pointer;
+}
+
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #3498db;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.slider-input::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: #2980b9;
+}
+
+.slider-input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #3498db;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider-range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #999;
+  margin-top: 4px;
+}
+
+/* ============================================ */
+/* Panel Node */
+/* ============================================ */
+.panel-node {
+  min-width: 180px;
+  max-width: 300px;
+}
+
+.panel-container {
+  min-height: 80px;
+}
+
+.panel-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  border: 2px solid #3498db;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  resize: vertical;
+  outline: none;
+  background: #fafafa;
+}
+
+.panel-display {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  background: #fafafa;
+  white-space: pre-wrap;
+  word-break: break-word;
+  cursor: text;
+  transition: background 0.2s;
+}
+
+.panel-display:hover {
+  background: #f0f0f0;
+}
+
+.panel-placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+/* ============================================ */
+/* Boolean Toggle Node */
+/* ============================================ */
+.boolean-node {
+  min-width: 140px;
+}
+
+.boolean-container {
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.boolean-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 20px;
+  background: #e74c3c;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+}
+
+.boolean-toggle.active {
+  background: #27ae60;
+}
+
+.boolean-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-track {
+  width: 40px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.toggle-thumb {
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.boolean-toggle.active .toggle-thumb {
+  transform: translateX(20px);
+}
+
+.toggle-label {
+  min-width: 45px;
+  text-align: center;
+}
+
+/* ============================================ */
+/* Button Node */
+/* ============================================ */
+.button-node {
+  min-width: 130px;
+}
+
+.button-container {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.action-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.button-icon {
+  font-size: 12px;
+}
+
+.click-counter {
+  font-size: 11px;
+  color: #666;
+  padding: 2px 8px;
+  background: #f0f0f0;
+  border-radius: 10px;
+}
+
+/* ============================================ */
+/* Number Input Node */
+/* ============================================ */
+.number-input-node {
+  min-width: 140px;
+}
+
+.number-input-container {
+  padding: 8px;
+}
+
+.number-input-field {
+  width: 100%;
+  padding: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  border: 2px solid #3498db;
+  border-radius: 6px;
+  outline: none;
+  background: #fafafa;
+  color: #2c3e50;
+}
+
+.number-display {
+  width: 100%;
+  padding: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  background: #f8f9fa;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #2c3e50;
+}
+
+.number-display:hover {
+  background: #e9ecef;
+  border-color: #bbb;
+}
+
+/* ============================================ */
+/* Responsive Adjustments */
+/* ============================================ */
+@media (max-width: 768px) {
+  .interactive-node {
+    min-width: 140px;
+  }
+
+  .slider-node {
+    min-width: 160px;
+  }
+
+  .panel-node {
+    min-width: 150px;
+    max-width: 250px;
+  }
+}
+
+/* ============================================ */
+/* Animation for new nodes */
+/* ============================================ */
+@keyframes nodeAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.interactive-node {
+  animation: nodeAppear 0.3s ease-out;
+}
