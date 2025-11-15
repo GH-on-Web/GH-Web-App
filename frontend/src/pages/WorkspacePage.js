@@ -38,10 +38,13 @@ function WorkspacePage() {
           height: '100%',
           zIndex: 2,
           pointerEvents: graphPointerEvents,
-          backgroundColor: 'transparent',
+          backgroundColor: 'transparent !important',
           '& .react-flow__nodes, & .react-flow__edges': {
             opacity: graphOpacity,
             transition: 'opacity 0.3s ease-in-out',
+          },
+          '& .react-flow': {
+            backgroundColor: 'transparent !important',
           },
           '& .react-flow__viewport': {
             backgroundColor: 'transparent !important',
@@ -50,6 +53,9 @@ function WorkspacePage() {
             backgroundColor: 'transparent !important',
           },
           '& .react-flow__renderer': {
+            backgroundColor: 'transparent !important',
+          },
+          '& .react-flow__container': {
             backgroundColor: 'transparent !important',
           },
         }}
