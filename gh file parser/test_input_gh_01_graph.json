@@ -1,140 +1,56 @@
 {
-  "DocumentName": "test_input_gh_01",
-  "DocumentPath": "C:\\Users\\abawiskar\\Documents\\GitHub\\GH-Web-App\\gh file parser\\test_input_gh_01.gh",
-  "NodeCount": 4,
-  "EdgeCount": 2,
-  "Nodes": [
+  "nodes": [
     {
-      "Id": 0,
-      "InstanceGuid": "3a0688c3-2c5f-4317-ab1b-1a108402f212",
-      "Name": "Number Slider",
-      "NickName": "Number Slider",
-      "TypeName": "Grasshopper.Kernel.Special.GH_NumberSlider",
-      "IsComponent": false,
-      "IsParam": true,
-      "Bounds": {
-        "X": 322.0,
-        "Y": 145.0,
-        "Width": 203.0,
-        "Height": 20.0
-      },
-      "Inputs": [],
-      "Outputs": [
-        {
-          "ParamGuid": "3a0688c3-2c5f-4317-ab1b-1a108402f212",
-          "Name": "Number Slider",
-          "NickName": "Number Slider",
-          "ParamType": "Grasshopper.Kernel.Special.GH_NumberSlider",
-          "Access": "item"
-        }
-      ]
+      "id": "Number_Slider",
+      "guid": "57da07bd-ecab-415d-9d86-af36d7073abc",
+      "nickname": "Number Slider",
+      "x": 322.0,
+      "y": 145.0,
+      "properties": {
+        "Min": 0.0,
+        "Max": 20.0,
+        "Value": 1.0
+      }
     },
     {
-      "Id": 1,
-      "InstanceGuid": "5ec01def-362e-44bd-87fd-27844c32d5ae",
-      "Name": "Number Slider",
-      "NickName": "Number Slider",
-      "TypeName": "Grasshopper.Kernel.Special.GH_NumberSlider",
-      "IsComponent": false,
-      "IsParam": true,
-      "Bounds": {
-        "X": 316.0,
-        "Y": 268.0,
-        "Width": 203.0,
-        "Height": 20.0
-      },
-      "Inputs": [],
-      "Outputs": [
-        {
-          "ParamGuid": "5ec01def-362e-44bd-87fd-27844c32d5ae",
-          "Name": "Number Slider",
-          "NickName": "Number Slider",
-          "ParamType": "Grasshopper.Kernel.Special.GH_NumberSlider",
-          "Access": "item"
-        }
-      ]
+      "id": "Number_Slider_2",
+      "guid": "57da07bd-ecab-415d-9d86-af36d7073abc",
+      "nickname": "Number Slider",
+      "x": 316.5,
+      "y": 268.5,
+      "properties": {
+        "Min": 0.0,
+        "Max": 1.0,
+        "Value": 0.7
+      }
     },
     {
-      "Id": 2,
-      "InstanceGuid": "83631e1d-dc92-4ef6-bf29-2f3cf821b1b5",
-      "Name": "Addition",
-      "NickName": "Addition",
-      "TypeName": "MathComponents.OperatorComponents.Component_VariableAddition",
-      "IsComponent": true,
-      "IsParam": false,
-      "Bounds": {
-        "X": 592.0,
-        "Y": 139.0,
-        "Width": 88.0,
-        "Height": 70.0
-      },
-      "ComponentGuid": "a0d62394-a118-422d-abb3-6af115c75b25",
-      "Category": "Maths",
-      "SubCategory": "Operators",
-      "Inputs": [
-        {
-          "ParamGuid": "4e2963e6-f40d-4ec6-9149-171996dd0a5d",
-          "Name": "A",
-          "NickName": "A",
-          "ParamType": "Grasshopper.Kernel.Parameters.Param_GenericObject",
-          "Access": "item"
-        },
-        {
-          "ParamGuid": "623cf4a7-c775-48a7-8aca-d993253f8945",
-          "Name": "B",
-          "NickName": "B",
-          "ParamType": "Grasshopper.Kernel.Parameters.Param_GenericObject",
-          "Access": "item"
-        }
-      ],
-      "Outputs": [
-        {
-          "ParamGuid": "1f88d127-4147-433c-9bda-06373281b621",
-          "Name": "Result",
-          "NickName": "Result",
-          "ParamType": "Grasshopper.Kernel.Parameters.Param_GenericObject",
-          "Access": "item"
-        }
-      ]
+      "id": "Addition",
+      "guid": "a0d62394-a118-422d-abb3-6af115c75b25",
+      "nickname": "Addition",
+      "x": 623.0,
+      "y": 174.0
     },
     {
-      "Id": 3,
-      "InstanceGuid": "0af46c9d-de9a-4ebb-a34a-18771c5c9d97",
-      "Name": "Panel",
-      "NickName": "",
-      "TypeName": "Grasshopper.Kernel.Special.GH_Panel",
-      "IsComponent": false,
-      "IsParam": true,
-      "Bounds": {
-        "X": 742.0,
-        "Y": 75.0,
-        "Width": 160.0,
-        "Height": 100.0
-      },
-      "Inputs": [],
-      "Outputs": [
-        {
-          "ParamGuid": "0af46c9d-de9a-4ebb-a34a-18771c5c9d97",
-          "Name": "Panel",
-          "NickName": "",
-          "ParamType": "Grasshopper.Kernel.Special.GH_Panel",
-          "Access": "item"
-        }
-      ]
+      "id": "Panel",
+      "guid": "59e0b89a-e487-49f8-bab8-b5bab16be14c",
+      "nickname": "",
+      "x": 742.0,
+      "y": 75.5
     }
   ],
-  "Edges": [
+  "links": [
     {
-      "FromNodeId": 0,
-      "ToNodeId": 2,
-      "FromParamGuid": "3a0688c3-2c5f-4317-ab1b-1a108402f212",
-      "ToParamGuid": "4e2963e6-f40d-4ec6-9149-171996dd0a5d"
+      "fromNode": "Number_Slider",
+      "fromParam": "0",
+      "toNode": "Addition",
+      "toParam": "A"
     },
     {
-      "FromNodeId": 1,
-      "ToNodeId": 2,
-      "FromParamGuid": "5ec01def-362e-44bd-87fd-27844c32d5ae",
-      "ToParamGuid": "623cf4a7-c775-48a7-8aca-d993253f8945"
+      "fromNode": "Number_Slider_2",
+      "fromParam": "0",
+      "toNode": "Addition",
+      "toParam": "B"
     }
   ]
 }
