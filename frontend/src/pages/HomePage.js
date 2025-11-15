@@ -22,7 +22,7 @@ function HomePage() {
     const user = username || `User_${nanoid(6)}`;
     // Store username in localStorage
     localStorage.setItem('username', user);
-    navigate(`/workspace/${newWorkspaceId}`);
+    navigate(`/workspace3dm/${newWorkspaceId}`);
   };
 
   const handleJoinWorkspace = () => {
@@ -32,19 +32,20 @@ function HomePage() {
     }
     const user = username || `User_${nanoid(6)}`;
     localStorage.setItem('username', user);
-    navigate(`/workspace/${workspaceId.trim()}`);
+    navigate(`/workspace3dm/${workspaceId.trim()}`);
   };
 
   return (
-    <Container sx={{ py: 4, maxWidth: '600px' }}>
-      <Typography variant="h4" gutterBottom align="center">
-        GH Web Workspace
-      </Typography>
-      <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 4 }}>
-        Collaborative Grasshopper in the Browser
-      </Typography>
+    <Box sx={{ height: '100%', overflow: 'auto' }}>
+      <Container sx={{ py: 4, maxWidth: '600px' }}>
+        <Typography variant="h4" gutterBottom align="center">
+          GH Web Workspace
+        </Typography>
+        <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 4 }}>
+          Collaborative Grasshopper in the Browser
+        </Typography>
 
-      <Stack spacing={3}>
+        <Stack spacing={3}>
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
             Create New Workspace
@@ -97,7 +98,7 @@ function HomePage() {
           />
           <Button
             fullWidth
-            variant="outlined"
+            variant="contained"
             size="large"
             onClick={handleJoinWorkspace}
             disabled={!workspaceId.trim()}
@@ -106,7 +107,8 @@ function HomePage() {
           </Button>
         </Paper>
       </Stack>
-    </Container>
+      </Container>
+    </Box>
   );
 }
 

@@ -72,6 +72,7 @@ function App() {
                 <Route path="/workspace" element={<WorkspacePage />} />
                 <Route path="/workspace/:workspaceId" element={<WorkspacePage />} />
                 <Route path="/workspace3dm" element={<Workspace3DMPage />} />
+                <Route path="/workspace3dm/:workspaceId" element={<Workspace3DMPage />} />
                 <Route path="/docs" element={<DocumentationPage />} />
               </Routes>
             </Box>
