@@ -4,6 +4,13 @@
  */
 
 /**
+ * Scale factor for converting between Grasshopper and UI coordinates
+ * Grasshopper uses tighter spacing, so we multiply by this factor for display
+ * and divide when exporting back to Grasshopper format
+ */
+export const POSITION_SCALE_FACTOR = 2;
+
+/**
  * Maps Grasshopper component GUIDs to interactive node types
  */
 const INTERACTIVE_NODE_MAPPING = {
@@ -156,7 +163,7 @@ export const parseConnections = (connections) => {
     sourceHandle: `output-${conn.sourceHandleIndex || 0}`,
     target: conn.targetNodeId,
     targetHandle: `input-${conn.targetHandleIndex || 0}`,
-    type: 'smoothstep',
+    type: 'default',
     animated: false,
     style: { stroke: '#b1b1b7', strokeWidth: 2 }
   }));
@@ -190,7 +197,11 @@ export const parseSimplifiedGraph = (simplifiedData, componentsDatabase) => {
 
   const nodes = simplifiedData.nodes.map(nodeData => {
     const { id, guid, nickname, x, y, properties } = nodeData;
-    const position = { x: x || 0, y: y || 0 };
+    // Scale up positions for UI display
+    const position = { 
+      x: (x || 0) * POSITION_SCALE_FACTOR, 
+      y: (y || 0) * POSITION_SCALE_FACTOR 
+    };
     
     // Check if this is an interactive node type
     const interactiveType = INTERACTIVE_NODE_MAPPING[guid];
@@ -308,7 +319,7 @@ export const parseSimplifiedGraph = (simplifiedData, componentsDatabase) => {
       sourceHandle,
       target: `node-${toNode}`,
       targetHandle,
-      type: 'smoothstep',
+      type: 'default',
       animated: false,
       style: { stroke: '#b1b1b7', strokeWidth: 2 }
     };

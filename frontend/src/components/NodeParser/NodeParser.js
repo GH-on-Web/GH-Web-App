@@ -271,7 +271,7 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
         });
       } else {
         // Normal connection creation
-        const newEdge = { ...params, type: 'smoothstep', style: { stroke: '#b1b1b7', strokeWidth: 2 } };
+        const newEdge = { ...params, type: 'default', style: { stroke: '#b1b1b7', strokeWidth: 2 } };
         setEdges((eds) => addEdge(newEdge, eds));
         
         // Add to connection manager

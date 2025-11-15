@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NodeParser } from '../components/NodeParser';
+import { POSITION_SCALE_FACTOR } from '../utils/nodeParser';
 import exampleData from '../data/exampleGraph.json';
 import exampleDataInteractive from '../data/exampleGraphInteractive.json';
 import testScript1 from '../data/Test-Script-1.json';
@@ -176,8 +177,8 @@ const NodeParserDemo = () => {
             id: newComponentInstance.instanceId,
             guid: reactFlowNode.data.guid,
             nickname: reactFlowNode.data.nickname || reactFlowNode.data.name,
-            x: newComponentInstance.position.x,
-            y: newComponentInstance.position.y,
+            x: newComponentInstance.position.x / POSITION_SCALE_FACTOR,
+            y: newComponentInstance.position.y / POSITION_SCALE_FACTOR,
             properties: {}
           };
           
@@ -232,8 +233,8 @@ const NodeParserDemo = () => {
           if (reactFlowNode && reactFlowNode.position) {
             return {
               ...node,
-              x: reactFlowNode.position.x,
-              y: reactFlowNode.position.y
+              x: reactFlowNode.position.x / POSITION_SCALE_FACTOR,
+              y: reactFlowNode.position.y / POSITION_SCALE_FACTOR
             };
           }
           return node;
