@@ -1,47 +1,71 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, Button, Box, Container } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box, Container, ThemeProvider, createTheme, CssBaseline, useMediaQuery } from '@mui/material';
 import HomePage from './pages/HomePage';
 import WorkspacePage from './pages/WorkspacePage';
+import Workspace3DMPage from './pages/Workspace3DMPage';
 import DocumentationPage from './pages/DocumentationPage';
+import ThemeToggle from './components/ThemeToggle';
+import useThemeStore from './store/themeStore';
 import './App.css';
 
 function App() {
+  const { mode } = useThemeStore();
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
+  const theme = useMemo(() => {
+    const themeMode = mode === 'system' ? (prefersDarkMode ? 'dark' : 'light') : mode;
+    return createTheme({
+      palette: {
+        mode: themeMode,
+        primary: {
+          main: themeMode === 'light' ? '#eeeeee' : '#424242',
+        },
+      },
+    });
+  }, [mode, prefersDarkMode]);
+
   return (
-    <Router>
-      <Box sx={{ flexGrow: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <AppBar position="static">
-          <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              GH Web Workspace
-            </Typography>
-            <Button color="inherit" component={Link} to="/">
-              Home
-            </Button>
-            <Button color="inherit" component={Link} to="/workspace">
-              Workspace
-            </Button>
-            <Button color="inherit" component={Link} to="/docs">
-              Docs
-            </Button>
-          </Toolbar>
-        </AppBar>
-        <Box component="main" sx={{ flexGrow: 1 }}>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Router>
+        <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <AppBar position="static">
+            <Toolbar variant="dense" sx={{ minHeight: 48 }}>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontSize: '1.1rem' }}>
+                GH Web Workspace
+              </Typography>
+              <Button color="inherit" component={Link} to="/" size="small">
+                Home
+              </Button>
+              <Button color="inherit" component={Link} to="/workspace" size="small">
+                Workspace
+              </Button>
+              <Button color="inherit" component={Link} to="/workspace3dm" size="small">
+                Workspace 3DM
+              </Button>
+              <Button color="inherit" component={Link} to="/docs" size="small">
+                Docs
+              </Button>
+              <ThemeToggle />
+            </Toolbar>
+          </AppBar>
+        <Box component="main" sx={{ flexGrow: 1, overflow: 'hidden' }}>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/workspace" element={<WorkspacePage />} />
+            <Route path="/workspace3dm" element={<Workspace3DMPage />} />
             <Route path="/docs" element={<DocumentationPage />} />
           </Routes>
         </Box>
-        <Box component="footer" sx={{ py: 2, borderTop: 1, borderColor: 'divider' }}>
-          <Container>
-            <Typography variant="body2" color="text.secondary">
-              © {new Date().getFullYear()} GH Web Workspace
-            </Typography>
-          </Container>
+        <Box component="footer" sx={{ py: 0.5, px: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Typography variant="caption" color="text.secondary">
+            © {new Date().getFullYear()} GH Web Workspace
+          </Typography>
         </Box>
       </Box>
     </Router>
+    </ThemeProvider>
   );
 }
 
