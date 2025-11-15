@@ -55,7 +55,7 @@ const useComputeStore = create((set, get) => ({
   },
 
   async parseGhToJson(payload) {
-    return request('/scripts/compute-gh-to-json', {
+    return request('/gh-to-json', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -63,7 +63,7 @@ const useComputeStore = create((set, get) => ({
 
   async jsonToGh(payload) {
     // Returns an ArrayBuffer for the GH file; UI can turn it into a Blob/download.
-    return request('/scripts/compute-json-to-gh', {
+    return request('/json-to-gh', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -97,6 +97,13 @@ const useComputeStore = create((set, get) => ({
 
   async fetchHealth() {
     return request('/health/alive');
+  },
+
+  async runTestScript(payload = {}) {
+    return request('/test-script', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
   },
 }));
 

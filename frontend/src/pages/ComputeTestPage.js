@@ -106,6 +106,11 @@ function ComputeTestPage() {
   const [healthLoading, setHealthLoading] = useState(false);
   const [healthError, setHealthError] = useState('');
 
+  const [testScriptResult, setTestScriptResult] = useState('');
+  const [testScriptLoading, setTestScriptLoading] = useState(false);
+  const [testScriptError, setTestScriptError] = useState('');
+  const [testScriptParams, setTestScriptParams] = useState('');
+
   useEffect(() => {
     return () => {
       if (jsonToGhDownload?.url) {
@@ -202,6 +207,31 @@ function ComputeTestPage() {
     }
   };
 
+  const handleTestScript = async () => {
+    setTestScriptLoading(true);
+    setTestScriptError('');
+
+    let payload = {};
+    if (testScriptParams.trim()) {
+      try {
+        payload = JSON.parse(testScriptParams);
+      } catch (err) {
+        setTestScriptError('Invalid JSON in parameters');
+        setTestScriptLoading(false);
+        return;
+      }
+    }
+
+    try {
+      const response = await computeStore.runTestScript(payload);
+      setTestScriptResult(formatResponse(response));
+    } catch (err) {
+      setTestScriptError(err.message || 'Test script failed');
+    } finally {
+      setTestScriptLoading(false);
+    }
+  };
+
   const proxiedInstructions = useMemo(
     () =>
       proxyPath
@@ -250,7 +280,7 @@ function ComputeTestPage() {
           <Paper variant="outlined" sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography variant="h6">GH → JSON</Typography>
             <Typography variant="body2" color="text.secondary">
-              Drop a GH definition and post the text to /scripts/compute-gh-to-json. The JSON response will appear below.
+              Drop a GH definition and post the text to /gh-to-json. The JSON response will appear below.
             </Typography>
             <FileDrop label="Drop GH script for JSON" file={ghFile} onFileChange={setGhFile} />
             <Button variant="contained" onClick={handleGhToJson} disabled={!ghFile || ghLoading}>
@@ -271,7 +301,7 @@ function ComputeTestPage() {
           <Paper variant="outlined" sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography variant="h6">JSON → GH</Typography>
             <Typography variant="body2" color="text.secondary">
-              Paste a JSON payload and send it to /scripts/compute-json-to-gh. You can download the resulting .gh file.
+              Paste a JSON payload and send it to /json-to-gh. You can download the resulting .gh file.
             </Typography>
             <TextField
               label="JSON payload"
@@ -333,6 +363,35 @@ function ComputeTestPage() {
             )}
             <Box component="pre" sx={{ bgcolor: 'background.paper', p: 2, borderRadius: 1, minHeight: 80, overflow: 'auto' }}>
               {healthResult || 'Health response will appear here'}
+            </Box>
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Paper variant="outlined" sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography variant="h6">Test Script</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Run test-script.gh with optional parameter values. Leave parameters empty to run with defaults.
+            </Typography>
+            <TextField
+              label="Optional Parameters (JSON)"
+              multiline
+              minRows={4}
+              value={testScriptParams}
+              onChange={(event) => setTestScriptParams(event.target.value)}
+              placeholder={'{\n  "values": [\n    {\n      "ParamName": "Number 1",\n      "InnerTree": {"0": [{"type": "System.Double", "data": "5.0"}]}\n    }\n  ]\n}'}
+              helperText="Provide parameter values in Grasshopper format, or leave empty"
+            />
+            <Button variant="contained" onClick={handleTestScript} disabled={testScriptLoading}>
+              {testScriptLoading ? 'Running...' : 'Run Test Script'}
+            </Button>
+            {testScriptError && (
+              <Typography color="error" variant="body2">
+                {testScriptError}
+              </Typography>
+            )}
+            <Box component="pre" sx={{ bgcolor: 'background.paper', p: 2, borderRadius: 1, minHeight: 120, overflow: 'auto' }}>
+              {testScriptResult || 'Test script results will appear here'}
             </Box>
           </Paper>
         </Grid>
