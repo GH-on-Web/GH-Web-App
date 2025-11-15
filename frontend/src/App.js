@@ -4,6 +4,7 @@ import { AppBar, Toolbar, Typography, Button, Box, Container } from '@mui/materi
 import HomePage from './pages/HomePage';
 import WorkspacePage from './pages/WorkspacePage';
 import DocumentationPage from './pages/DocumentationPage';
+import BunnyPage from './pages/BunnyPage';
 import './App.css';
 
 function App() {
@@ -21,6 +22,9 @@ function App() {
             <Button color="inherit" component={Link} to="/workspace">
               Workspace
             </Button>
+            <Button color="inherit" component={Link} to="/bunny">
+              3D Bunny
+            </Button>
             <Button color="inherit" component={Link} to="/docs">
               Docs
             </Button>
@@ -30,6 +34,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/workspace" element={<WorkspacePage />} />
+            <Route path="/bunny" element={<BunnyPage />} />
             <Route path="/docs" element={<DocumentationPage />} />
           </Routes>
         </Box>
