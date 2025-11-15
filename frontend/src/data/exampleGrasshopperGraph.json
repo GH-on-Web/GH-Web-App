@@ -1,0 +1,77 @@
+{
+  "nodes": [
+    {
+      "name": "Number Slider",
+      "description": "Numeric slider for number values",
+      "inputs": {},
+      "outputs": {
+        "output": "Number"
+      }
+    },
+    {
+      "name": "Addition",
+      "description": "Mathematical addition",
+      "inputs": {
+        "A": "First Number",
+        "B": "Second Number"
+      },
+      "outputs": {
+        "result": "Sum"
+      }
+    },
+    {
+      "name": "Multiplication",
+      "description": "Mathematical multiplication",
+      "inputs": {
+        "A": "First Number",
+        "B": "Second Number"
+      },
+      "outputs": {
+        "result": "Product"
+      }
+    },
+    {
+      "name": "Point",
+      "description": "Construct a point from coordinates",
+      "inputs": {
+        "x": "X Coordinate",
+        "y": "Y Coordinate",
+        "z": "Z Coordinate"
+      },
+      "outputs": {
+        "point": "Point"
+      }
+    },
+    {
+      "name": "Circle",
+      "description": "Create a circle",
+      "inputs": {
+        "plane": "Base Plane",
+        "radius": "Radius"
+      },
+      "outputs": {
+        "circle": "Circle"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": 0,
+      "output": "output",
+      "to": 1,
+      "input": "A"
+    },
+    {
+      "from": 0,
+      "output": "output",
+      "to": 2,
+      "input": "A"
+    },
+    {
+      "from": 1,
+      "output": "result",
+      "to": 4,
+      "input": "radius"
+    }
+  ]
+}

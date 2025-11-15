@@ -1,0 +1,91 @@
+{
+    "components": {
+      "Guid": "000b5181-298b-4eef-bbb3-9e89e58f04f2",
+      "Name": "Mesh Lambert Material Properties",
+      "Nickname": "Mesh Lambert Material Properties",
+      "Category": "CORE Apps",
+      "SubCategory": "Mirar",
+      "Inputs": [
+        {
+          "Name": "Material",
+          "Nickname": "M",
+          "Description": "Mesh Lambert Material to deconstruct",
+          "TypeName": "Generic Data",
+          "DotNetType": "Grasshopper.Kernel.Parameters.Param_GenericObject"
+        }
+      ],
+      "Outputs": [
+        {
+          "Name": "Color",
+          "Nickname": "C",
+          "Description": "Color of the material",
+          "TypeName": "Colour",
+          "DotNetType": "Grasshopper.Kernel.Parameters.Param_Colour"
+        },
+        {
+          "Name": "Emissive Color",
+          "Nickname": "eC",
+          "Description": "The emissive color of the material",
+          "TypeName": "Colour",
+          "DotNetType": "Grasshopper.Kernel.Parameters.Param_Colour"
+        },
+        {
+          "Name": "Opacity",
+          "Nickname": "O",
+          "Description": "The material's opacity",
+          "TypeName": "Number",
+          "DotNetType": "Grasshopper.Kernel.Parameters.Param_Number"
+        }
+      ]
+    },
+    {
+      "Guid": "002b2feb-5d1b-41ea-913f-9f203c615792",
+      "Name": "Tangent",
+      "Nickname": "Tan",
+      "Category": "Scalar",
+      "SubCategory": "Trig",
+      "Inputs": [
+        {
+          "Name": "Input",
+          "Nickname": "x",
+          "Description": "Input value",
+          "TypeName": "Number",
+          "DotNetType": "Grasshopper.Kernel.Parameters.Param_Number"
+        }
+      ],
+      "Outputs": [
+        {
+          "Name": "Output",
+          "Nickname": "y",
+          "Description": "Output value",
+          "TypeName": "Number",
+          "DotNetType": "Grasshopper.Kernel.Parameters.Param_Number"
+        }
+      ]
+    },
+    {
+      "Guid": "005ccb43-e524-4da8-ae64-8f5eea6402d6",
+      "Name": "SVG Text",
+      "Nickname": "SVG txt",
+      "Category": "Display",
+      "SubCategory": "Graphics",
+      "Inputs": [
+        {
+          "Name": "Drawing",
+          "Nickname": "D",
+          "Description": "A Drawing object",
+          "TypeName": "Generic Data",
+          "DotNetType": "Grasshopper.Kernel.Parameters.Param_GenericObject"
+        }
+      ],
+      "Outputs": [
+        {
+          "Name": "SVG Text",
+          "Nickname": "T",
+          "Description": "The Svg text",
+          "TypeName": "Text",
+          "DotNetType": "Grasshopper.Kernel.Parameters.Param_String"
+        }
+      ]
+    }
+}

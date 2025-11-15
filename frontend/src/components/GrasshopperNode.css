@@ -1,0 +1,91 @@
+.grasshopper-node {
+  background: white;
+  border: 2px solid #1a192b;
+  border-radius: 8px;
+  padding: 15px;
+  min-width: 180px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.grasshopper-node:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.node-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.node-header {
+  font-size: 14px;
+  color: #1a192b;
+  text-align: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.node-category {
+  font-size: 10px;
+  color: #999;
+  text-align: center;
+  padding: 4px 0;
+  font-style: italic;
+}
+
+.node-handles {
+  position: relative;
+}
+
+.handle-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.handle-label {
+  font-size: 11px;
+  color: #555;
+  white-space: nowrap;
+  padding: 2px 6px;
+  background: #f5f5f5;
+  border-radius: 3px;
+  user-select: none;
+}
+
+.input-label {
+  margin-left: 10px;
+}
+
+.output-label {
+  margin-right: 10px;
+  margin-left: auto;
+}
+
+/* Handle styles */
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.react-flow__handle-left {
+  left: -5px;
+}
+
+.react-flow__handle-right {
+  right: -5px;
+}
+
+.react-flow__handle:hover {
+  background: #4CAF50 !important;
+}
+
+/* Selected state */
+.grasshopper-node.selected {
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px #4CAF50;
+}
