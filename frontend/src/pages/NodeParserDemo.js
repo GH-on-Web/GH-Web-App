@@ -18,7 +18,7 @@ const NodeParserDemo = () => {
   useEffect(() => {
     const loadDatabase = async () => {
       try {
-        const response = await fetch('/gh_components v0.json');
+        const response = await fetch('/gh_components_native.json');
         if (response.ok) {
           const data = await response.json();
           if (data && data.Components) {
@@ -106,7 +106,7 @@ const NodeParserDemo = () => {
     setJsonInput(JSON.stringify(updatedData, null, 2));
   };
 
-  const handleNodesChange = (newNodes, newComponentInstance, deletedNodeIds) => {
+  const handleNodesChange = (newNodes, newComponentInstance, deletedNodeIds, isPositionUpdate) => {
     // If nodes are being deleted
     if (deletedNodeIds && deletedNodeIds.length > 0) {
       const updatedInstances = currentData.componentInstances?.filter(
@@ -134,8 +134,29 @@ const NodeParserDemo = () => {
       return;
     }
     
-    // For node movements/updates, don't trigger re-parse
-    // Just silently update the positions without setting currentData
+    // If this is a position update (node drag), update positions without triggering re-parse
+    if (isPositionUpdate && newNodes) {
+      const updatedInstances = currentData.componentInstances?.map(inst => {
+        const node = newNodes.find(n => n.id === `node-${inst.instanceId}`);
+        if (node && node.position) {
+          return {
+            ...inst,
+            position: node.position
+          };
+        }
+        return inst;
+      }) || [];
+      
+      const updatedData = {
+        componentInstances: updatedInstances,
+        connections: connections
+      };
+      setCurrentData(updatedData);
+      setJsonInput(JSON.stringify(updatedData, null, 2));
+      return;
+    }
+    
+    // For other node movements/updates, don't trigger re-parse
     // This prevents the graph from re-parsing and losing edges
   };
 
@@ -147,6 +168,18 @@ const NodeParserDemo = () => {
     const a = document.createElement('a');
     a.href = url;
     a.download = 'connections.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportGraph = () => {
+    const graphJson = JSON.stringify(currentData, null, 2);
+    // Create a downloadable file
+    const blob = new Blob([graphJson], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'grasshopper-graph.json';
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -175,6 +208,9 @@ const NodeParserDemo = () => {
           </button>
           <button onClick={handleClear} className="btn btn-tertiary">
             Clear
+          </button>
+          <button onClick={handleExportGraph} className="btn btn-export">
+            💾 Export Graph
           </button>
           <button onClick={handleExportConnections} className="btn btn-export">
             Export Connections

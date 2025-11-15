@@ -218,6 +218,20 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
     [setNodes, onNodesChangeCallback]
   );
 
+  // Handle node drag end to save position changes
+  const onNodeDragStop = useCallback(
+    (event, node) => {
+      if (onNodesChangeCallback) {
+        // Pass the updated node positions back to parent
+        setNodes((currentNodes) => {
+          onNodesChangeCallback(currentNodes, null, null, true); // 4th param indicates position update
+          return currentNodes;
+        });
+      }
+    },
+    [onNodesChangeCallback, setNodes]
+  );
+
   if (error) {
     return (
       <div className="node-parser-error">
@@ -237,6 +251,7 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
         onConnect={onConnect}
         onEdgesDelete={onEdgesDelete}
         onNodesDelete={handleNodesDelete}
+        onNodeDragStop={onNodeDragStop}
         nodeTypes={nodeTypes}
         nodesDraggable={true}
         nodesConnectable={true}
