@@ -17,6 +17,9 @@ function App() {
     return createTheme({
       palette: {
         mode: themeMode,
+        primary: {
+          main: themeMode === 'light' ? '#eeeeee' : '#424242',
+        },
       },
     });
   }, [mode, prefersDarkMode]);
