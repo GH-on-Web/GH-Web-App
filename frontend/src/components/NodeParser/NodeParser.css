@@ -1,0 +1,61 @@
+.node-parser-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.node-parser-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+  color: #d32f2f;
+}
+
+.node-parser-error h3 {
+  margin-bottom: 10px;
+}
+
+.node-parser-error p {
+  text-align: center;
+  max-width: 600px;
+}
+
+/* React Flow customizations */
+.react-flow__edge-path {
+  stroke: #b1b1b7;
+  stroke-width: 2;
+}
+
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:focus .react-flow__edge-path,
+.react-flow__edge:focus-visible .react-flow__edge-path {
+  stroke: #4CAF50;
+  stroke-width: 3;
+}
+
+.react-flow__node.selected .grasshopper-node {
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px #4CAF50;
+}
+
+/* Controls styling */
+.react-flow__controls {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.react-flow__controls-button {
+  border-bottom: 1px solid #eee;
+}
+
+.react-flow__controls-button:hover {
+  background: #f5f5f5;
+}
+
+/* MiniMap styling */
+.react-flow__minimap {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+}

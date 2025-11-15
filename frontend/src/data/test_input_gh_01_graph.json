@@ -1,0 +1,56 @@
+{
+  "nodes": [
+    {
+      "id": "Number_Slider",
+      "guid": "57da07bd-ecab-415d-9d86-af36d7073abc",
+      "nickname": "Number Slider",
+      "x": 322.0,
+      "y": 145.0,
+      "properties": {
+        "Min": 0.0,
+        "Max": 20.0,
+        "Value": 1.0
+      }
+    },
+    {
+      "id": "Number_Slider_2",
+      "guid": "57da07bd-ecab-415d-9d86-af36d7073abc",
+      "nickname": "Number Slider",
+      "x": 316.5,
+      "y": 268.5,
+      "properties": {
+        "Min": 0.0,
+        "Max": 1.0,
+        "Value": 0.7
+      }
+    },
+    {
+      "id": "Addition",
+      "guid": "a0d62394-a118-422d-abb3-6af115c75b25",
+      "nickname": "Addition",
+      "x": 623.0,
+      "y": 174.0
+    },
+    {
+      "id": "Panel",
+      "guid": "59e0b89a-e487-49f8-bab8-b5bab16be14c",
+      "nickname": "",
+      "x": 742.0,
+      "y": 75.5
+    }
+  ],
+  "links": [
+    {
+      "fromNode": "Number_Slider",
+      "fromParam": "0",
+      "toNode": "Addition",
+      "toParam": "A"
+    },
+    {
+      "fromNode": "Number_Slider_2",
+      "fromParam": "0",
+      "toNode": "Addition",
+      "toParam": "B"
+    }
+  ]
+}

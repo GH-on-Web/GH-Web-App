@@ -6,6 +6,8 @@ import HomePage from './pages/HomePage';
 import WorkspacePage from './pages/WorkspacePage';
 import Workspace3DMPage from './pages/Workspace3DMPage';
 import DocumentationPage from './pages/DocumentationPage';
+import NodeParserDemo from './pages/NodeParserDemo';
+import InteractiveNodesDemo from './pages/InteractiveNodesDemo';
 import ThemeToggle from './components/ThemeToggle';
 import useThemeStore from './store/themeStore';
 import './App.css';
@@ -60,6 +62,12 @@ function App() {
                 <Button color="inherit" component={Link} to="/workspace3dm" size="small">
                   Workspace 3DM
                 </Button>
+                <Button color="inherit" component={Link} to="/node-parser" size="small">
+                  Node Parser
+                </Button>
+                <Button color="inherit" component={Link} to="/interactive" size="small">
+                  Interactive
+                </Button>
                 <Button color="inherit" component={Link} to="/docs" size="small">
                   Docs
                 </Button>
@@ -73,6 +81,8 @@ function App() {
                 <Route path="/workspace/:workspaceId" element={<WorkspacePage />} />
                 <Route path="/workspace3dm" element={<Workspace3DMPage />} />
                 <Route path="/workspace3dm/:workspaceId" element={<Workspace3DMPage />} />
+                <Route path="/node-parser" element={<NodeParserDemo />} />
+                <Route path="/interactive" element={<InteractiveNodesDemo />} />
                 <Route path="/docs" element={<DocumentationPage />} />
               </Routes>
             </Box>

@@ -12,6 +12,7 @@ A web-based visual programming interface inspired by Grasshopper 3D, with **real
 - 🔗 **Shareable Workspaces** - Share workspace IDs to collaborate
 - 🧮 **Geometry Computation** - Python/Flask backend for geometry processing
 - 🎯 **3D Visualization** - Three.js viewer for geometry preview
+- 🔷 **Node Parser Component** - Reusable graph visualization system with 2,868+ Grasshopper components
 
 ## Tech Stack
 
@@ -97,10 +98,6 @@ pip install -r requirements.txt
 ### Start Frontend
 
 ```bash
-cd frontend
-npm start
-```
-
 The app will open at [http://localhost:3000](http://localhost:3000)
 
 ### Start Backend (Optional - for compute)
@@ -148,6 +145,32 @@ Backend runs on [http://localhost:5000](http://localhost:5000)
 - ✅ User presence → See who's online
 - ✅ Connection status → Shows "Connected"
 
+### Node Parser Component
+
+The reusable NodeParser component provides visual node-based graph editing:
+
+**Features:**
+- Search and add from 2,868+ Grasshopper components
+- Create/delete connections between nodes
+- Import/Export graph data as JSON
+- Drag to reposition with auto-save
+- Keyboard shortcuts (Delete, Ctrl+drag)
+
+**Quick Start:**
+```javascript
+import { NodeParser } from './components/NodeParser';
+
+<NodeParser
+  graphData={graphData}
+  onConnectionsChange={handleConnectionsChange}
+  onNodesChange={handleNodesChange}
+  componentsDatabase={components}
+/>
+```
+
+📖 [Full Documentation](frontend/src/components/NodeParser/README.md)  
+💡 [Example Usage](frontend/src/components/NodeParser/examples/)
+
 ## Project Structure
 
 ```
@@ -160,10 +183,20 @@ GH-Web-App/
 │   │   │   ├── Layout/          # App layout
 │   │   │   ├── nodes/          # Custom node components
 │   │   │   ├── Sidebar/        # Component library
-│   │   │   └── Viewer3D/       # Three.js viewer
+│   │   │   ├── Viewer3D/       # Three.js viewer
+│   │   │   └── NodeParser/      # Reusable node parser component
+│   │   │       ├── NodeParser.js    # Main canvas component
+│   │   │       ├── GrasshopperNode.js
+│   │   │       ├── ComponentSearch.js
+│   │   │       ├── examples/        # Usage examples
+│   │   │       ├── README.md        # Full documentation
+│   │   │       └── index.js         # Easy imports
 │   │   ├── hooks/              # Custom React hooks
 │   │   ├── pages/              # Page components
 │   │   ├── services/           # API services
+│   │   ├── utils/
+│   │   │   ├── nodeParser.js        # Parsing utilities
+│   │   │   └── connectionManager.js # Connection management
 │   │   └── store/              # Zustand stores
 │   ├── .env                    # Environment variables (create this!)
 │   └── package.json
@@ -201,6 +234,8 @@ GH-Web-App/
 - Liveblocks public API key is safe to share (it's public!)
 - Workspace IDs are shareable - use them to collaborate
 - Free tier supports up to 20,000 monthly active users
+- NodeParser component is self-contained in `frontend/src/components/NodeParser/`
+- All dependencies are clearly documented with integration examples
 
 ## Contributing
 
