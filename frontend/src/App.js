@@ -11,17 +11,17 @@ function App() {
     <Router>
       <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <AppBar position="static">
-          <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Toolbar variant="dense" sx={{ minHeight: 48 }}>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontSize: '1.1rem' }}>
               GH Web Workspace
             </Typography>
-            <Button color="inherit" component={Link} to="/">
+            <Button color="inherit" component={Link} to="/" size="small">
               Home
             </Button>
-            <Button color="inherit" component={Link} to="/workspace">
+            <Button color="inherit" component={Link} to="/workspace" size="small">
               Workspace
             </Button>
-            <Button color="inherit" component={Link} to="/docs">
+            <Button color="inherit" component={Link} to="/docs" size="small">
               Docs
             </Button>
           </Toolbar>
@@ -33,12 +33,10 @@ function App() {
             <Route path="/docs" element={<DocumentationPage />} />
           </Routes>
         </Box>
-        <Box component="footer" sx={{ py: 2, borderTop: 1, borderColor: 'divider' }}>
-          <Container>
-            <Typography variant="body2" color="text.secondary">
-              © {new Date().getFullYear()} GH Web Workspace
-            </Typography>
-          </Container>
+        <Box component="footer" sx={{ py: 0.5, px: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Typography variant="caption" color="text.secondary">
+            © {new Date().getFullYear()} GH Web Workspace
+          </Typography>
         </Box>
       </Box>
     </Router>
