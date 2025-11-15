@@ -429,15 +429,16 @@ const NodeParserDemo = () => {
       </div>
 
       <div className="demo-canvas">
-        {isLoadingDatabase ? (
+        {isLoadingDatabase && (
           <div className="loading-message">
-            Loading components database...
+            Loading components database ({componentsDatabase.length} loaded)...
           </div>
-        ) : componentsDatabase.length === 0 ? (
+        )}
+        {!isLoadingDatabase && componentsDatabase.length === 0 && (
           <div className="loading-message" style={{background: '#fff3cd', color: '#856404'}}>
-            ⚠️ Components database not loaded. Some features may not work correctly.
+            ⚠️ Components database not loaded. Search will not be available.
           </div>
-        ) : null}
+        )}
         <NodeParser 
           graphData={currentData} 
           onConnectionsChange={handleConnectionsChange}

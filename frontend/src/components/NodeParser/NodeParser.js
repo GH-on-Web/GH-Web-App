@@ -210,24 +210,19 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
           parsedEdges = result.edges;
         }
         
-        // Update nodes if this is initial load, node count changed, or database just loaded
+        // Only update nodes if this is initial load or if the node count changed
         const nodesChanged = parsedNodes.length !== nodes.length;
-        const hasDatabase = componentsDatabase && componentsDatabase.length > 0;
         
-        if (!isInitialized.current || nodesChanged || (hasDatabase && parsedNodes.length > 0)) {
+        if (!isInitialized.current || nodesChanged) {
           setNodes(parsedNodes);
-          
-          // Only mark as initialized if we have the database loaded (for simplified format)
-          // or if we're using the old format
-          if (!graphData.nodes || hasDatabase) {
-            isInitialized.current = true;
-          }
+          isInitialized.current = true;
         }
         
-        // Update edges if this is initial load, edge count changed, or database just loaded
-        const edgesChanged = parsedEdges.length !== edges.length;
+        // Only update edges if this is initial load or the edge count changed significantly
+        // This prevents overwriting user-created connections during re-renders
+        const edgesChanged = !isInitialized.current || Math.abs(parsedEdges.length - edges.length) > 1;
         
-        if (!isInitialized.current || edgesChanged || (hasDatabase && parsedEdges.length > 0 && edges.length === 0)) {
+        if (edgesChanged) {
           setEdges(parsedEdges);
         }
         
