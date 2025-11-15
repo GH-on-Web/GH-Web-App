@@ -108,25 +108,27 @@ const ComponentSearch = ({ componentsDatabase, onComponentSelect }) => {
       {isOpen && searchResults.length > 0 && (
         <div className="search-results">
           {searchResults.map((component, index) => (
-            <div
-              key={component.Guid}
-              className={`search-result-item ${index === selectedIndex ? 'selected' : ''}`}
-              onClick={() => handleSelectComponent(component)}
-              onMouseEnter={() => setSelectedIndex(index)}
-            >
-              <div className="result-main">
-                <span className="result-nickname">{component.Nickname || component.Name}</span>
-                <span className="result-name">{component.Name}</span>
+              <div
+                key={component.Guid}
+                className={`search-result-item ${index === selectedIndex ? 'selected' : ''}`}
+                onClick={() => handleSelectComponent(component)}
+                onMouseEnter={() => setSelectedIndex(index)}
+              >
+                <div className="result-content">
+                  <div className="result-main">
+                    <span className="result-nickname">{component.Nickname || component.Name}</span>
+                    <span className="result-name">{component.Name}</span>
+                  </div>
+                  <div className="result-category">
+                    {component.Category}{component.SubCategory ? ` > ${component.SubCategory}` : ''}
+                  </div>
+                  <div className="result-info">
+                    <span className="result-io">
+                      {component.Inputs?.length || 0} inputs • {component.Outputs?.length || 0} outputs
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="result-category">
-                {component.Category}{component.SubCategory ? ` > ${component.SubCategory}` : ''}
-              </div>
-              <div className="result-info">
-                <span className="result-io">
-                  {component.Inputs?.length || 0} inputs • {component.Outputs?.length || 0} outputs
-                </span>
-              </div>
-            </div>
           ))}
         </div>
       )}

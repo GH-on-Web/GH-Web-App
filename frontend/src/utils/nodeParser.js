@@ -321,6 +321,8 @@ export const parseSimplifiedGraph = (simplifiedData, componentsDatabase) => {
       targetHandle,
       type: 'default',
       animated: false,
+      selectable: true,
+      deletable: true,
       style: { stroke: '#b1b1b7', strokeWidth: 2 }
     };
   });

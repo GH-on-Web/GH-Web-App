@@ -218,8 +218,13 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
           isInitialized.current = true;
         }
         
-        // Always update edges to reflect connection changes
-        setEdges(parsedEdges);
+        // Only update edges if this is initial load or the edge count changed significantly
+        // This prevents overwriting user-created connections during re-renders
+        const edgesChanged = !isInitialized.current || Math.abs(parsedEdges.length - edges.length) > 1;
+        
+        if (edgesChanged) {
+          setEdges(parsedEdges);
+        }
         
         // Update connection manager
         if (graphData.connections) {
@@ -232,7 +237,7 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
         setError('Failed to parse graph data: ' + err.message);
       }
     }
-  }, [graphData, setNodes, setEdges, nodes.length, componentsDatabase]);
+  }, [graphData, setNodes, setEdges, nodes.length, edges.length, componentsDatabase]);
 
   // Handle connection creation or deletion (Ctrl+drag deletes existing connection)
   const onConnect = useCallback(
@@ -241,7 +246,12 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
       if (isCtrlPressed.current) {
         // Find and remove existing connection
         setEdges((eds) => {
-          const existingEdge = eds.find(
+          console.log('Ctrl+drag detected, looking for edge to delete');
+          console.log('Available edges:', eds.length);
+          console.log('Looking for:', params);
+          
+          // Try to find exact match first
+          let existingEdge = eds.find(
             edge => 
               edge.source === params.source &&
               edge.sourceHandle === params.sourceHandle &&
@@ -249,39 +259,64 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
               edge.targetHandle === params.targetHandle
           );
           
-          if (existingEdge) {
-            // Remove from connection manager
-            const connection = convertReactFlowConnection(params);
-            connectionManager.current.removeConnection(
-              connection.sourceNodeId,
-              connection.sourceHandleIndex,
-              connection.targetNodeId,
-              connection.targetHandleIndex
+          // If not found, try reverse direction (in case user drags backwards)
+          if (!existingEdge) {
+            existingEdge = eds.find(
+              edge => 
+                edge.target === params.source &&
+                edge.targetHandle === params.sourceHandle &&
+                edge.source === params.target &&
+                edge.sourceHandle === params.targetHandle
             );
+          }
+          
+          if (existingEdge) {
+            console.log('Found edge to delete:', existingEdge.id);
+            const updatedEdges = eds.filter(e => e.id !== existingEdge.id);
             
-            // Notify parent component
+            // Notify parent component with updated edges
             if (onConnectionsChange) {
-              onConnectionsChange(connectionManager.current.getAllConnections());
+              const connections = updatedEdges.map(edge => ({
+                sourceNodeId: edge.source,
+                sourceHandle: edge.sourceHandle,
+                targetNodeId: edge.target,
+                targetHandle: edge.targetHandle
+              }));
+              onConnectionsChange(connections);
             }
             
-            // Remove from edges
-            return eds.filter(e => e.id !== existingEdge.id);
+            return updatedEdges;
+          } else {
+            console.log('No matching edge found to delete');
           }
           return eds;
         });
       } else {
         // Normal connection creation
-        const newEdge = { ...params, type: 'default', style: { stroke: '#b1b1b7', strokeWidth: 2 } };
-        setEdges((eds) => addEdge(newEdge, eds));
-        
-        // Add to connection manager
-        const connection = convertReactFlowConnection(params);
-        connectionManager.current.addConnection(connection);
-        
-        // Notify parent component
-        if (onConnectionsChange) {
-          onConnectionsChange(connectionManager.current.getAllConnections());
-        }
+        const newEdge = { 
+          ...params, 
+          type: 'default', 
+          selectable: true,
+          deletable: true,
+          style: { stroke: '#b1b1b7', strokeWidth: 2 } 
+        };
+        setEdges((eds) => {
+          const updatedEdges = addEdge(newEdge, eds);
+          
+          // Notify parent component with updated edges
+          if (onConnectionsChange) {
+            // Convert edges to connection format for parent
+            const connections = updatedEdges.map(edge => ({
+              sourceNodeId: edge.source,
+              sourceHandle: edge.sourceHandle,
+              targetNodeId: edge.target,
+              targetHandle: edge.targetHandle
+            }));
+            onConnectionsChange(connections);
+          }
+          
+          return updatedEdges;
+        });
       }
     },
     [setEdges, onConnectionsChange]
@@ -290,22 +325,26 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
   // Handle edge deletion
   const onEdgesDelete = useCallback(
     (edgesToDelete) => {
-      edgesToDelete.forEach(edge => {
-        const connection = convertReactFlowConnection(edge);
-        connectionManager.current.removeConnection(
-          connection.sourceNodeId,
-          connection.sourceHandleIndex,
-          connection.targetNodeId,
-          connection.targetHandleIndex
+      setEdges((eds) => {
+        const remainingEdges = eds.filter(
+          edge => !edgesToDelete.some(del => del.id === edge.id)
         );
+        
+        // Notify parent component with updated edges
+        if (onConnectionsChange) {
+          const connections = remainingEdges.map(edge => ({
+            sourceNodeId: edge.source,
+            sourceHandle: edge.sourceHandle,
+            targetNodeId: edge.target,
+            targetHandle: edge.targetHandle
+          }));
+          onConnectionsChange(connections);
+        }
+        
+        return remainingEdges;
       });
-      
-      // Notify parent component
-      if (onConnectionsChange) {
-        onConnectionsChange(connectionManager.current.getAllConnections());
-      }
     },
-    [onConnectionsChange]
+    [onConnectionsChange, setEdges]
   );
 
   // Handle node deletion

@@ -119,11 +119,35 @@ const NodeParserDemo = () => {
     // Detect format and update accordingly
     const isSimplifiedFormat = currentData.nodes && currentData.links;
     
+    // Convert connections to the appropriate format
+    let formattedConnections = newConnections;
+    
+    if (isSimplifiedFormat) {
+      // Convert from React Flow edge format {sourceNodeId: "node-xyz", sourceHandle: "output-0", ...}
+      // to simplified format {fromNode: "xyz", fromParam: "0", toNode: "abc", toParam: "A"}
+      formattedConnections = newConnections.map(conn => {
+        // Remove "node-" prefix from IDs
+        const fromNode = conn.sourceNodeId?.replace(/^node-/, '');
+        const toNode = conn.targetNodeId?.replace(/^node-/, '');
+        
+        // Extract param from handle ID (e.g., "output-0" -> "0", "input-A" -> "A")
+        const fromParam = conn.sourceHandle?.replace(/^output-/, '') || "0";
+        const toParam = conn.targetHandle?.replace(/^input-/, '') || "0";
+        
+        return {
+          fromNode,
+          fromParam,
+          toNode,
+          toParam
+        };
+      });
+    }
+    
     // Update current data with new connections to keep them in sync
     const updatedData = isSimplifiedFormat
       ? {
           ...currentData,
-          links: newConnections
+          links: formattedConnections
         }
       : {
           ...currentData,
