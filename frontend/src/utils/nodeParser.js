@@ -195,6 +195,11 @@ export const parseSimplifiedGraph = (simplifiedData, componentsDatabase) => {
     return { nodes: [], edges: [] };
   }
 
+  console.log('=== parseSimplifiedGraph ===');
+  console.log('Input data:', simplifiedData);
+  console.log('Database size:', componentsDatabase?.length || 0);
+  console.log('Links to process:', simplifiedData.links?.length || 0);
+
   const nodes = simplifiedData.nodes.map(nodeData => {
     const { id, guid, nickname, x, y, properties } = nodeData;
     // Scale up positions for UI display
@@ -266,6 +271,12 @@ export const parseSimplifiedGraph = (simplifiedData, componentsDatabase) => {
           type: 'source'
         }))
       : [];
+    
+    console.log(`Node ${id} (${nickname}):`, {
+      guid,
+      inputs: inputHandles.map(h => `${h.nickname}(${h.id})`),
+      outputs: outputHandles.map(h => `${h.nickname}(${h.id})`)
+    });
 
     return {
       id: `node-${id}`,
@@ -283,37 +294,69 @@ export const parseSimplifiedGraph = (simplifiedData, componentsDatabase) => {
     };
   });
 
+  console.log('Parsed nodes:', nodes.length);
+  console.log('Node IDs:', nodes.map(n => n.id));
+
   // Parse links/connections
   const edges = (simplifiedData.links || []).map((link, index) => {
     const { fromNode, fromParam, toNode, toParam } = link;
+    
+    console.log(`Processing link ${index}:`, link);
     
     // Find source and target nodes to determine handle indices
     const sourceNode = nodes.find(n => n.id === `node-${fromNode}`);
     const targetNode = nodes.find(n => n.id === `node-${toNode}`);
     
-    let sourceHandle = `output-${fromParam}`;
-    let targetHandle = `input-${toParam}`;
+    if (!sourceNode) {
+      console.warn(`Source node ${fromNode} not found for link:`, link);
+      return null;
+    }
+    
+    if (!targetNode) {
+      console.warn(`Target node ${toNode} not found for link:`, link);
+      return null;
+    }
+    
+    console.log(`  Source node found:`, sourceNode.id, 'outputs:', sourceNode.data.outputs?.length || 0);
+    console.log(`  Target node found:`, targetNode.id, 'inputs:', targetNode.data.inputs?.length || 0);
+    
+    let sourceHandle = `output-0`;  // Default to index 0
+    let targetHandle = `input-0`;   // Default to index 0
     
     // If fromParam/toParam are strings (parameter names), find the index
-    if (sourceNode && isNaN(fromParam)) {
+    if (isNaN(fromParam)) {
       const outputIndex = sourceNode.data.outputs?.findIndex(
         o => o.nickname === fromParam || o.name === fromParam
       );
-      if (outputIndex >= 0) sourceHandle = `output-${outputIndex}`;
-    } else if (!isNaN(fromParam)) {
+      if (outputIndex >= 0) {
+        sourceHandle = `output-${outputIndex}`;
+        console.log(`  Mapped output param "${fromParam}" to index ${outputIndex}`);
+      } else {
+        console.warn(`  Output parameter "${fromParam}" not found in node ${fromNode}, using default output-0`);
+        sourceHandle = `output-0`;
+      }
+    } else {
       sourceHandle = `output-${fromParam}`;
+      console.log(`  Using numeric output index: ${fromParam}`);
     }
     
-    if (targetNode && isNaN(toParam)) {
+    if (isNaN(toParam)) {
       const inputIndex = targetNode.data.inputs?.findIndex(
         i => i.nickname === toParam || i.name === toParam
       );
-      if (inputIndex >= 0) targetHandle = `input-${inputIndex}`;
-    } else if (!isNaN(toParam)) {
+      if (inputIndex >= 0) {
+        targetHandle = `input-${inputIndex}`;
+        console.log(`  Mapped input param "${toParam}" to index ${inputIndex}`);
+      } else {
+        console.warn(`  Input parameter "${toParam}" not found in node ${toNode}, using default input-0`);
+        targetHandle = `input-0`;
+      }
+    } else {
       targetHandle = `input-${toParam}`;
+      console.log(`  Using numeric input index: ${toParam}`);
     }
     
-    return {
+    const edge = {
       id: `edge-${index}`,
       source: `node-${fromNode}`,
       sourceHandle,
@@ -325,7 +368,13 @@ export const parseSimplifiedGraph = (simplifiedData, componentsDatabase) => {
       deletable: true,
       style: { stroke: '#b1b1b7', strokeWidth: 2 }
     };
-  });
+    
+    console.log(`  Created edge:`, edge);
+    return edge;
+  }).filter(edge => edge !== null);
+
+  console.log('Total edges created:', edges.length);
+  console.log('=== End parseSimplifiedGraph ===');
 
   return { nodes, edges };
 };
@@ -348,7 +397,15 @@ const createInteractiveNodeFromSimplified = (id, guid, nickname, position, prope
           min: properties?.Min || 0,
           max: properties?.Max || 100,
           step: properties?.Step || 1,
-          value: properties?.Value || properties?.min || 0
+          value: properties?.Value || properties?.min || 0,
+          outputs: [
+            {
+              id: 'output-0',
+              name: 'Number',
+              nickname: 'N',
+              type: 'source'
+            }
+          ]
         }
       };
       
@@ -361,7 +418,23 @@ const createInteractiveNodeFromSimplified = (id, guid, nickname, position, prope
           id: nodeId,
           nickname: nickname || 'Panel',
           text: properties?.Text || '',
-          isInput: properties?.IsInput || false
+          isInput: properties?.IsInput || false,
+          inputs: [
+            {
+              id: 'input-0',
+              name: 'Input',
+              nickname: 'I',
+              type: 'target'
+            }
+          ],
+          outputs: [
+            {
+              id: 'output-0',
+              name: 'Output',
+              nickname: 'O',
+              type: 'source'
+            }
+          ]
         }
       };
       
@@ -373,7 +446,15 @@ const createInteractiveNodeFromSimplified = (id, guid, nickname, position, prope
         data: {
           id: nodeId,
           nickname: nickname || 'Toggle',
-          value: properties?.Value || false
+          value: properties?.Value || false,
+          outputs: [
+            {
+              id: 'output-0',
+              name: 'Boolean',
+              nickname: 'B',
+              type: 'source'
+            }
+          ]
         }
       };
       
@@ -384,7 +465,15 @@ const createInteractiveNodeFromSimplified = (id, guid, nickname, position, prope
         position,
         data: {
           id: nodeId,
-          nickname: nickname || 'Button'
+          nickname: nickname || 'Button',
+          outputs: [
+            {
+              id: 'output-0',
+              name: 'Button',
+              nickname: 'B',
+              type: 'source'
+            }
+          ]
         }
       };
       
@@ -396,7 +485,15 @@ const createInteractiveNodeFromSimplified = (id, guid, nickname, position, prope
         data: {
           id: nodeId,
           nickname: nickname || 'Number',
-          value: properties?.Value || 0
+          value: properties?.Value || 0,
+          outputs: [
+            {
+              id: 'output-0',
+              name: 'Number',
+              nickname: 'N',
+              type: 'source'
+            }
+          ]
         }
       };
       
