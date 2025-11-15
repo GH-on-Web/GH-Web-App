@@ -1,0 +1,77 @@
+{
+  "nodes": [
+    {
+      "id": "panel_hello",
+      "guid": "59e0b89a-e487-49f8-bab8-b5bab16be14c",
+      "nickname": "Hello",
+      "x": 40,
+      "y": 40,
+      "properties": { "Text": "Hello" }
+    },
+    {
+      "id": "panel_world",
+      "guid": "59e0b89a-e487-49f8-bab8-b5bab16be14c",
+      "nickname": "World",
+      "x": 40,
+      "y": 100,
+      "properties": { "Text": "world" }
+    },
+    {
+      "id": "panel_extra",
+      "guid": "59e0b89a-e487-49f8-bab8-b5bab16be14c",
+      "nickname": "Extra",
+      "x": 40,
+      "y": 160,
+      "properties": { "Text": "!!" }
+    },
+    {
+      "id": "panel_join",
+      "guid": "59e0b89a-e487-49f8-bab8-b5bab16be14c",
+      "nickname": "JoinStr",
+      "x": 40,
+      "y": 220,
+      "properties": { "Text": " " }
+    },
+    {
+      "id": "concat",
+      "guid": "2013e425-8713-42e2-a661-b57e78840337",
+      "nickname": "Concat",
+      "x": 260,
+      "y": 80
+    },
+    {
+      "id": "merge",
+      "guid": "3cadddef-1e2b-4c09-9390-0e8f78f7609f",
+      "nickname": "Merge",
+      "x": 260,
+      "y": 180
+    },
+    {
+      "id": "text_join",
+      "guid": "1274d51a-81e6-4ccf-ad1f-0edf4c769cac",
+      "nickname": "Join",
+      "x": 480,
+      "y": 160
+    },
+    {
+      "id": "panel_result",
+      "guid": "59e0b89a-e487-49f8-bab8-b5bab16be14c",
+      "nickname": "Result",
+      "x": 700,
+      "y": 160,
+      "properties": { "Text": "Result string" }
+    }
+  ],
+  "links": [
+    { "fromNode": "panel_hello", "fromParam": "0", "toNode": "concat",      "toParam": "A" },
+    { "fromNode": "panel_world", "fromParam": "0", "toNode": "concat",      "toParam": "B" },
+
+    { "fromNode": "concat",      "fromParam": "R", "toNode": "merge",       "toParam": "D1" },
+    { "fromNode": "panel_extra", "fromParam": "0", "toNode": "merge",       "toParam": "D2" },
+
+    { "fromNode": "merge",       "fromParam": "R", "toNode": "text_join",   "toParam": "T" },
+    { "fromNode": "panel_join",  "fromParam": "0", "toNode": "text_join",   "toParam": "J" },
+
+    { "fromNode": "text_join",   "fromParam": "R", "toNode": "panel_result","toParam": "0" }
+  ]
+}
