@@ -1,0 +1,280 @@
+---
+alwaysApply: true
+---
+
+# Cursor Rules for GH-Web-App
+
+## Project Overview
+This is a hackathon project building a web-based visual programming interface inspired by Grasshopper 3D. The project uses React (Create React App) with React Flow for node graphs, Material-UI for UI components, and a Python/Flask backend for geometry computation.
+
+## Tech Stack
+
+### Frontend
+- **React** (Create React App, not Vite)
+- **React Flow** (v11) - Node graph editor
+- **Material-UI (MUI)** (v7) - UI components
+- **Zustand** - State management
+- **Three.js** + **@react-three/fiber** - 3D visualization
+- **Axios** - HTTP client
+- **JavaScript** (not TypeScript for speed)
+
+### Backend
+- **Python 3.x**
+- **Flask** - Web framework
+- **Flask-CORS** - CORS handling
+- **rhino3dm** - Geometry computation
+
+## Project Structure
+
+```
+frontend/src/
+├── components/
+│   ├── Canvas/          # React Flow canvas components
+│   ├── Layout/          # Layout components (AppLayout)
+│   ├── nodes/          # Custom React Flow node components
+│   ├── Sidebar/        # Sidebar components (ComponentLibrary, ParameterPanel)
+│   └── Viewer3D/       # Three.js 3D viewer
+├── hooks/              # Custom React hooks
+├── services/           # API and utility services
+├── store/              # Zustand stores
+├── types/              # Type definitions and constants
+└── pages/              # Page components
+```
+
+## Coding Conventions
+
+### File Naming
+- Components: `PascalCase.jsx` (e.g., `PointNode.jsx`)
+- Hooks: `camelCase.js` with `use` prefix (e.g., `useCompute.js`)
+- Services: `camelCase.js` (e.g., `computeAPI.js`)
+- Store files: `camelCase.js` (e.g., `workspaceStore.js`)
+
+### Component Structure
+```jsx
+import React from 'react';
+import { /* MUI imports */ } from '@mui/material';
+
+/**
+ * ComponentName - Brief description
+ * Additional details if needed
+ */
+function ComponentName({ prop1, prop2 }) {
+  // Hooks
+  // State
+  // Handlers
+  // Render
+  return (
+    // JSX
+  );
+}
+
+export default ComponentName;
+```
+
+### React Flow Node Components
+- Always use `Handle` from `reactflow` for inputs/outputs
+- Use `Position.Left` for inputs, `Position.Right` for outputs
+- Always prevent event propagation on MUI inputs:
+  ```jsx
+  onMouseDown={(e) => e.stopPropagation()}
+  onKeyDown={(e) => e.stopPropagation()}
+  ```
+- Pass `onChange` callback through node data for parameter updates
+- Use color-coded borders: Green for primitives, Orange for parameters, Blue for operations
+
+### State Management (Zustand)
+- Store files in `store/` directory
+- Use `create` from `zustand`
+- Export as default: `export default useWorkspaceStore`
+- Use `set` and `get` for state updates
+- Keep stores focused on specific domains
+
+### MUI Styling
+- Use `sx` prop for styling (preferred over `styled`)
+- Use theme spacing: `sx={{ p: 2, gap: 1 }}`
+- Use theme colors: `color="primary"`, `bgcolor="grey.100"`
+- Responsive: Use MUI breakpoints when needed
+
+### API Services
+- Place in `services/` directory
+- Use async/await, not promises
+- Handle errors with try/catch
+- Return consistent response format
+- Use environment variables for API URLs: `process.env.REACT_APP_API_URL`
+
+### Custom Hooks
+- Place in `hooks/` directory
+- Prefix with `use` (e.g., `useCompute`)
+- Return object with state and functions
+- Use `useCallback` for memoized functions
+
+## Component Patterns
+
+### Node Components
+```jsx
+import { Handle, Position } from 'reactflow';
+import { TextField, Box, Typography } from '@mui/material';
+
+function CustomNode({ data, id }) {
+  return (
+    <Box sx={{ /* styling */ }}>
+      <Typography>Node Label</Typography>
+      <TextField
+        value={data.inputs?.value}
+        onChange={(e) => data.onChange(id, 'value', e.target.value)}
+        onMouseDown={(e) => e.stopPropagation()}
+      />
+      <Handle type="source" position={Position.Right} id="output" />
+    </Box>
+  );
+}
+```
+
+### Store Pattern
+```jsx
+import { create } from 'zustand';
+
+const useStore = create((set, get) => ({
+  // State
+  items: [],
+  
+  // Actions
+  addItem: (item) => set({ items: [...get().items, item] }),
+  
+  // React Flow handlers
+  onNodesChange: (changes) => set({ 
+    nodes: applyNodeChanges(changes, get().nodes) 
+  }),
+}));
+```
+
+## Important Guidelines
+
+### Event Handling
+- **Always** prevent propagation on MUI inputs inside React Flow nodes
+- Use `onMouseDown` and `onKeyDown` to stop propagation
+- This prevents canvas panning when interacting with node controls
+
+### Node Data Structure
+```jsx
+{
+  id: string,
+  type: string,  // 'point', 'circle', 'number', etc.
+  position: { x: number, y: number },
+  data: {
+    label: string,
+    inputs: { /* node-specific inputs */ },
+    onChange: (nodeId, inputKey, value) => void,  // Callback for updates
+  }
+}
+```
+
+### Graph Serialization
+- Use `graphConverter.js` service for converting between React Flow format and backend JSON
+- Backend expects: `{ nodes: [], edges: [] }`
+- Edges: `{ source, sourceHandle, target, targetHandle }`
+
+### Error Handling
+- Use try/catch in async functions
+- Display user-friendly error messages
+- Log errors to console for debugging
+- Return error state from hooks/services
+
+## Node Type Constants
+- Use `NODE_TYPES` from `types/nodes.js` for consistency
+- Categories: `NODE_CATEGORIES.PRIMITIVES`, `.PARAMETERS`, `.OPERATIONS`, `.MATH`
+- Data types: `DATA_TYPES.POINT`, `.NUMBER`, `.GEOMETRY`
+
+## Backend API Contract
+
+### POST /api/compute
+Request:
+```json
+{
+  "graph": {
+    "nodes": [...],
+    "edges": [...]
+  },
+  "settings": { "tolerance": 0.01 }
+}
+```
+
+Response:
+```json
+{
+  "geometry": [{
+    "type": "mesh",
+    "vertices": [[x, y, z], ...],
+    "faces": [[i, j, k], ...]
+  }],
+  "errors": []
+}
+```
+
+## Performance Considerations
+- Use `useCallback` for event handlers passed to React Flow
+- Memoize expensive computations
+- Debounce auto-compute (when implemented)
+- Lazy load Three.js viewer if needed
+
+## Testing Approach
+- Focus on manual testing for hackathon
+- Test node creation, connection, parameter editing
+- Test compute flow end-to-end
+- Verify error handling
+
+## Common Pitfalls to Avoid
+1. ❌ Forgetting to stop event propagation on MUI inputs
+2. ❌ Not passing `onChange` callback through node data
+3. ❌ Using wrong node type strings (use constants from `types/nodes.js`)
+4. ❌ Not handling async errors in compute flow
+5. ❌ Creating nodes without proper default inputs
+
+## Quick Reference
+
+### Add New Node Type
+1. Create component in `components/nodes/NodeName.jsx`
+2. Add to `components/nodes/index.js` exports
+3. Register in `WorkspacePage.js` nodeTypes object
+4. Add to `NODE_TYPES` in `types/nodes.js`
+5. Add to ComponentLibrary categories
+6. Update ParameterPanel if needed
+7. Add default inputs in `workspaceStore.js` `getDefaultInputs()`
+
+### Add New Service
+1. Create file in `services/ServiceName.js`
+2. Export async functions
+3. Use axios for HTTP calls
+4. Handle errors consistently
+
+### Add New Hook
+1. Create file in `hooks/useHookName.js`
+2. Use standard React hooks
+3. Return object with state and functions
+4. Use `useCallback` for memoization
+
+## Code Style
+- Use functional components (no class components)
+- Use arrow functions for handlers
+- Prefer const over let
+- Use template literals for strings
+- Use destructuring for props and state
+- Keep components focused and small
+- Extract reusable logic to hooks/services
+
+## Comments
+- Use JSDoc-style comments for components and functions
+- Explain "why" not "what" in comments
+- Keep comments up to date with code changes
+
+## Git Workflow
+- Commit working features incrementally
+- Use descriptive commit messages
+- Don't commit node_modules or build artifacts
+
+---
+
+**Last Updated:** During hackathon development
+**Project Phase:** Phase 1-2 (Foundation and Core Functionality)
+
+

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Button, Box, Container, ThemeProvider, createTheme, CssBaseline, useMediaQuery } from '@mui/material';
 import HomePage from './pages/HomePage';
 import WorkspacePage from './pages/WorkspacePage';
+import Workspace3DMPage from './pages/Workspace3DMPage';
 import DocumentationPage from './pages/DocumentationPage';
 import ThemeToggle from './components/ThemeToggle';
 import useThemeStore from './store/themeStore';
@@ -40,6 +41,9 @@ function App() {
               <Button color="inherit" component={Link} to="/workspace" size="small">
                 Workspace
               </Button>
+              <Button color="inherit" component={Link} to="/workspace3dm" size="small">
+                Workspace 3DM
+              </Button>
               <Button color="inherit" component={Link} to="/docs" size="small">
                 Docs
               </Button>
@@ -50,6 +54,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/workspace" element={<WorkspacePage />} />
+            <Route path="/workspace3dm" element={<Workspace3DMPage />} />
             <Route path="/docs" element={<DocumentationPage />} />
           </Routes>
         </Box>
