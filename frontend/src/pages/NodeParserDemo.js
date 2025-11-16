@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTheme } from '@mui/material';
-import { IconButton, Box } from '@mui/material';
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { IconButton, Box, Button } from '@mui/material';
+import { ChevronLeft, ChevronRight, Save, FolderOpen, Delete, PlayArrow } from '@mui/icons-material';
 import { RoomProvider } from '@liveblocks/react';
 import { NodeParser } from '../components/NodeParser';
 import { useGraphCollaboration } from '../hooks/useCollaboration';
@@ -515,20 +515,89 @@ const NodeParserDemoContent = ({ roomId }) => {
       </div>
 
       {/* Floating action buttons */}
-      <div className="demo-floating-controls">
-        <button onClick={handleExportGraph} className="btn btn-save" title="Save graph as JSON file">
-          💾 Save
-        </button>
-        <button onClick={handleLoadFile} className="btn btn-load" title="Load JSON file">
-          📁 Load File
-        </button>
-        <button onClick={handleClear} className="btn btn-clear" title="Clear canvas">
-          🗑️ Clear
-        </button>
-        <button onClick={handleRun} className="btn btn-run" title="Export and run (coming soon)">
-          ▶ Run
-        </button>
-      </div>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '20px',
+          right: isViewerCollapsed ? '20px' : '440px',
+          zIndex: 100,
+          display: 'flex',
+          gap: 1,
+        }}
+      >
+        <Button
+          variant="contained"
+          onClick={handleExportGraph}
+          title="Save graph as JSON file"
+          startIcon={<Save />}
+          sx={{
+            bgcolor: theme.palette.mode === 'dark' ? '#424242' : '#e0e0e0',
+            color: theme.palette.mode === 'dark' ? 'white' : 'black',
+            '&:hover': {
+              bgcolor: theme.palette.mode === 'dark' ? '#525252' : '#d0d0d0',
+            },
+            textTransform: 'none',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+          }}
+        >
+          Save
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleLoadFile}
+          title="Load JSON file"
+          startIcon={<FolderOpen />}
+          sx={{
+            bgcolor: theme.palette.mode === 'dark' ? '#424242' : '#e0e0e0',
+            color: theme.palette.mode === 'dark' ? 'white' : 'black',
+            '&:hover': {
+              bgcolor: theme.palette.mode === 'dark' ? '#525252' : '#d0d0d0',
+            },
+            textTransform: 'none',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+          }}
+        >
+          Load
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleClear}
+          title="Clear canvas"
+          startIcon={<Delete />}
+          sx={{
+            bgcolor: theme.palette.mode === 'dark' ? '#424242' : '#e0e0e0',
+            color: theme.palette.mode === 'dark' ? 'white' : 'black',
+            '&:hover': {
+              bgcolor: theme.palette.mode === 'dark' ? '#525252' : '#d0d0d0',
+            },
+            textTransform: 'none',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+          }}
+        >
+          Clear
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleRun}
+          title="Export and run (coming soon)"
+          startIcon={<PlayArrow />}
+          sx={{
+            bgcolor: theme.palette.mode === 'dark' ? '#424242' : '#e0e0e0',
+            color: theme.palette.mode === 'dark' ? 'white' : 'black',
+            '&:hover': {
+              bgcolor: theme.palette.mode === 'dark' ? '#525252' : '#d0d0d0',
+            },
+            textTransform: 'none',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+          }}
+        >
+          Run
+        </Button>
+      </Box>
     </div>
   );
 };
