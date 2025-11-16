@@ -213,13 +213,13 @@ function SceneContent({ geometry, theme }) {
   }
 
   const meshes = Array.isArray(geometry) ? geometry : [geometry];
-  console.log('SceneContent: Rendering', meshes.length, 'mesh(es)');
+  // console.log('SceneContent: Rendering', meshes.length, 'mesh(es)');
 
   // Check if the array contains three-objects
   const hasThreeObjects = meshes.length > 0 && meshes[0].type === 'three-object';
 
   if (hasThreeObjects) {
-    console.log('SceneContent: Rendering array of Three.js objects');
+    // console.log('SceneContent: Rendering array of Three.js objects');
 
     // Log details about each object
     meshes.forEach((item, index) => {
@@ -228,16 +228,16 @@ function SceneContent({ geometry, theme }) {
         const positions = mesh.geometry.attributes.position;
         const vertexCount = positions ? positions.count : 0;
         const indexCount = mesh.geometry.index ? mesh.geometry.index.count : 0;
-        console.log(`[ThreeViewer] Object ${index} - Name: "${item.name}", Vertices: ${vertexCount}, Faces: ${indexCount / 3}, Type: ${item.type}`);
+        // console.log(`[ThreeViewer] Object ${index} - Name: "${item.name}", Vertices: ${vertexCount}, Faces: ${indexCount / 3}, Type: ${item.type}`);
 
         // Log bounding box to check geometry scale
         mesh.geometry.computeBoundingBox();
         const bbox = mesh.geometry.boundingBox;
-        if (bbox) {
-          console.log(`[ThreeViewer] Object ${index} - BoundingBox min: [${bbox.min.x}, ${bbox.min.y}, ${bbox.min.z}], max: [${bbox.max.x}, ${bbox.max.y}, ${bbox.max.z}]`);
-        } else {
-          console.log(`[ThreeViewer] Object ${index} - BoundingBox: null`);
-        }
+        // if (bbox) {
+        //   console.log(`[ThreeViewer] Object ${index} - BoundingBox min: [${bbox.min.x}, ${bbox.min.y}, ${bbox.min.z}], max: [${bbox.max.x}, ${bbox.max.y}, ${bbox.max.z}]`);
+        // } else {
+        //   console.log(`[ThreeViewer] Object ${index} - BoundingBox: null`);
+        // }
       }
     });
 
