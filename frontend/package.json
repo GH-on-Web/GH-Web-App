@@ -1,4 +1,7 @@
 {
+  "browser": {
+    "fs": false
+  },
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
@@ -23,14 +26,16 @@
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.6",
     "react-scripts": "5.0.1",
+    "reactflow": "^11.11.4",
+    "rhino3dm": "^8.17.0",
     "three": "^0.181.1",
     "web-vitals": "^2.1.4",
     "zustand": "^5.0.8"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -50,5 +55,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@craco/craco": "^7.1.0"
   }
 }

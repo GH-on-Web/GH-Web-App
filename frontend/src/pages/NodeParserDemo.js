@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { useTheme } from '@mui/material';
 import { IconButton, Box } from '@mui/material';
@@ -8,6 +9,7 @@ import { NodeParser } from '../components/NodeParser';
 import { useGraphCollaboration } from '../hooks/useCollaboration';
 import CollaborationStatus from '../components/Collaboration/CollaborationStatus';
 import ThreeViewer from '../components/Viewer3D/ThreeViewer';
+import ThreeViewerRhino from '../components/Viewer3D/ThreeViewerRhino';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { POSITION_SCALE_FACTOR } from '../utils/nodeParser';
 import exampleData from '../data/exampleGraph.json';
@@ -15,9 +17,18 @@ import exampleDataInteractive from '../data/exampleGraphInteractive.json';
 import testScript1 from '../data/Test-Script-1.json';
 import './NodeParserDemo.css';
 
+// Configure axios to use the backend URL
+const BACKEND_URL = process.env.REACT_APP_COMPUTE_GATEWAY_URL || 'http://localhost:4001';
+const api = axios.create({
+  baseURL: BACKEND_URL,
+});
+
 /**
  * Inner component that uses Liveblocks room for real-time collaboration
  */
+// Toggle this to enable/disable backend save logic
+const USE_BACKEND_SAVE = true;
+
 const NodeParserDemoContent = ({ roomId }) => {
   const theme = useTheme();
   
@@ -84,15 +95,110 @@ const NodeParserDemoContent = ({ roomId }) => {
       );
       if (!confirmed) return;
     }
-    
+
     // Create a file input element
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.json';
-    
-    input.onchange = (e) => {
+    // Only allow .gh for backend, .json for local
+    input.accept = USE_BACKEND_SAVE ? '.gh' : '.json';
+
+    input.onchange = async (e) => {
       const file = e.target.files[0];
-      if (file) {
+      if (!file) return;
+
+      if (USE_BACKEND_SAVE) {
+        // Backend logic: read .gh file, convert to base64, send to backend
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          try {
+            // Convert file to base64
+            const arrayBuffer = event.target.result;
+            const uint8Array = new Uint8Array(arrayBuffer);
+            const ghBase64 = btoa(String.fromCharCode(...uint8Array));
+            
+            console.log(`[Load] Sending .gh file (${ghBase64.length} chars base64) to backend`);
+            
+            const response = await api.post('/gh-to-json', {
+              ghFileBase64: ghBase64,
+              fileName: file.name,
+            });
+            
+            console.log('[Load] Backend response:', response.data);
+            
+            // The backend returns the full Rhino Compute response
+            // We need to extract the JSON from the output parameter
+            if (response.data && response.data.values) {
+              console.log('[Load] Response has', response.data.values.length, 'output parameters');
+              
+              // Log all parameter names to help debugging
+              response.data.values.forEach((v, idx) => {
+                console.log(`[Load] Parameter ${idx}: ${v.ParamName}`);
+              });
+              
+              // Look for the output parameter with the JSON string
+              // Try multiple possible parameter names
+              const jsonOutput = response.data.values.find(v => 
+                v.ParamName && (
+                  v.ParamName.includes('json') || 
+                  v.ParamName.includes('JSON') ||
+                  v.ParamName.includes('Set String') || 
+                  v.ParamName.includes('Output') ||
+                  v.ParamName.includes('RH_OUT')
+                )
+              );
+              
+              if (jsonOutput && jsonOutput.InnerTree) {
+                console.log('[Load] Found output parameter:', jsonOutput.ParamName);
+                const firstKey = Object.keys(jsonOutput.InnerTree)[0];
+                console.log('[Load] InnerTree keys:', Object.keys(jsonOutput.InnerTree));
+                
+                if (firstKey && jsonOutput.InnerTree[firstKey].length > 0) {
+                  const item = jsonOutput.InnerTree[firstKey][0];
+                  console.log('[Load] First item type:', item.type);
+                  let jsonString = item.data;
+                  console.log('[Load] Extracted JSON string length:', jsonString?.length);
+                  console.log('[Load] Extracted JSON string (first 300 chars):', jsonString?.substring(0, 300) + '...');
+                  
+                  // The JSON might be double-encoded (JSON string containing JSON string)
+                  // Try parsing once, and if result is still a string, parse again
+                  let parsed = JSON.parse(jsonString);
+                  console.log('[Load] First parse result type:', typeof parsed);
+                  
+                  if (typeof parsed === 'string') {
+                    console.log('[Load] JSON was double-encoded, parsing again...');
+                    parsed = JSON.parse(parsed);
+                  }
+                  
+                  console.log('[Load] Final parsed object:', parsed);
+                  console.log('[Load] Parsed has nodes?', !!parsed.nodes);
+                  console.log('[Load] Nodes count:', parsed.nodes?.length);
+                  console.log('[Load] Parsed has links?', !!parsed.links);
+                  console.log('[Load] Links count:', parsed.links?.length);
+                  
+                  updateGraphData(parsed);
+                  setParseError(null);
+                  console.log('[Load] Successfully loaded graph with', parsed.nodes?.length || 0, 'nodes and', parsed.links?.length || 0, 'links');
+                } else {
+                  console.error('[Load] InnerTree is empty or missing data');
+                  setParseError('Backend response missing JSON data in InnerTree.');
+                }
+              } else {
+                console.error('[Load] Could not find output parameter with JSON');
+                console.error('[Load] Available parameters:', response.data.values.map(v => v.ParamName).join(', '));
+                setParseError('Backend response missing expected output parameter. Available: ' + 
+                  response.data.values.map(v => v.ParamName).join(', '));
+              }
+            } else {
+              setParseError('Backend did not return valid response structure.');
+            }
+          } catch (err) {
+            console.error('[Load] Error:', err);
+            setParseError('Failed to load file from backend: ' + (err?.response?.data?.error?.message || err.message));
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        // Old local logic: read and parse JSON file
         const reader = new FileReader();
         reader.onload = (event) => {
           try {
@@ -107,7 +213,7 @@ const NodeParserDemoContent = ({ roomId }) => {
         reader.readAsText(file);
       }
     };
-    
+
     input.click();
   };
 
@@ -342,24 +448,90 @@ const NodeParserDemoContent = ({ roomId }) => {
     URL.revokeObjectURL(url);
   };
 
-  const handleExportGraph = () => {
-    const graphJson = JSON.stringify(currentData, null, 2);
-    // Create a downloadable file
-    const blob = new Blob([graphJson], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'grasshopper-graph.json';
-    a.click();
-    URL.revokeObjectURL(url);
+
+  // Save button: backend or local logic
+  const handleExportGraph = async () => {
+    if (USE_BACKEND_SAVE) {
+      try {
+        // POST to backend /json-to-gh endpoint
+        const response = await api.post(
+          '/json-to-gh',
+          currentData,
+          { responseType: 'arraybuffer' }
+        );
+        // Check for Grasshopper file in response
+        const contentType = response.headers['content-type'] || '';
+        if (contentType.includes('application/octet-stream') || response.data) {
+          // Create a blob and trigger download
+          const blob = new Blob([response.data], { type: 'application/octet-stream' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'generated.gh';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 100);
+        } else {
+          alert('Backend did not return a valid .gh file.');
+        }
+      } catch (err) {
+        alert('Failed to generate .gh file: ' + (err?.response?.data?.error?.message || err.message));
+      }
+    } else {
+      // Old local save logic (JSON)
+      const graphJson = JSON.stringify(currentData, null, 2);
+      const blob = new Blob([graphJson], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'grasshopper-graph.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
-  const handleRun = () => {
-    // Export current canvas graph (will be replaced with backend call later)
-    //handleExportGraph();
-    
-    // Generate sample geometry for 3D viewer
-    generateSampleGeometry();
+
+  // Store solve result for later visualization
+  const [solveResult, setSolveResult] = useState(null);
+
+  const handleRun = async () => {
+    if (USE_BACKEND_SAVE) {
+      try {
+        // 1. Convert JSON to GH file
+        const ghResponse = await api.post('/json-to-gh', currentData, { responseType: 'arraybuffer' });
+        if (!ghResponse.data) throw new Error('No .gh file returned from backend');
+
+        // 2. Upload GH file to backend (as base64)
+        const ghBase64 = btoa(String.fromCharCode(...new Uint8Array(ghResponse.data)));
+        const uploadResponse = await api.post('/grasshopper/upload', {
+          ghFileBase64: ghBase64,
+          fileName: 'generated.gh',
+        });
+        const pointer = uploadResponse.data?.pointer;
+        if (!pointer) throw new Error('No pointer returned from upload');
+
+        // 3. Solve using pointer
+        const solveResponse = await api.post('/grasshopper/solve', {
+          algo: null,
+          pointer,
+          fileName: 'generated.gh',
+          values: [], // TODO: add param values if needed
+          cachesolve: true
+        });
+        setSolveResult(solveResponse.data);
+        // TODO: visualize solveResponse.data
+        // For now, just log it
+        console.log('Grasshopper solve result:', solveResponse.data);
+      } catch (err) {
+        alert('Failed to run workflow: ' + (err?.response?.data?.error?.message || err.message));
+      }
+    } else {
+      // Old demo logic
+      generateSampleGeometry();
+    }
   };
 
   // Generate sample geometry for demonstration
@@ -442,7 +614,11 @@ const NodeParserDemoContent = ({ roomId }) => {
                   3D Preview {sampleGeometry ? '(Sample Cube)' : '(No geometry)'}
                 </div>
                 <ErrorBoundary>
-                  <ThreeViewer geometry={sampleGeometry} />
+                  {USE_BACKEND_SAVE && solveResult ? (
+                    <ThreeViewerRhino solveResult={solveResult} />
+                  ) : (
+                    <ThreeViewer geometry={sampleGeometry} />
+                  )}
                 </ErrorBoundary>
               </div>
               {/* Close button for expanded viewer - now outside the panel */}

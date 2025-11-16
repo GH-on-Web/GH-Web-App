@@ -269,7 +269,8 @@ function ComputeTestPage() {
   };
 
   return (
-    <Container sx={{ py: 4 }}>
+    <Box sx={{ height: '100vh', overflow: 'auto' }}>
+      <Container sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom>
         Compute Gateway Test
       </Typography>
@@ -418,7 +419,8 @@ function ComputeTestPage() {
           </Paper>
         </Grid>
       </Grid>
-    </Container>
+      </Container>
+    </Box>
   );
 }
 
