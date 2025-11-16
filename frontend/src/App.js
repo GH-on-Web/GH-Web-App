@@ -71,9 +71,9 @@ function App() {
                 <Button color="inherit" component={Link} to="/" size="small">
                   Home
                 </Button>
-                <Button color="inherit" component={Link} to="/workspace" size="small">
+                {/* <Button color="inherit" component={Link} to="/workspace" size="small">
                   Workspace
-                </Button>
+                </Button> */}
                 <Button color="inherit" component={Link} to="/workspace3dm" size="small">
                   Workspace 3DM
                 </Button>
