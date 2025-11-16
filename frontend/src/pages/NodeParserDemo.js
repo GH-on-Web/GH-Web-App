@@ -12,6 +12,7 @@ import ThreeViewer from '../components/Viewer3D/ThreeViewer';
 import ThreeViewerRhino from '../components/Viewer3D/ThreeViewerRhino';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { POSITION_SCALE_FACTOR } from '../utils/nodeParser';
+import { convertRhinoComputeToThreeViewer } from '../utils/rhinoGeometryConverter';
 import exampleData from '../data/exampleGraph.json';
 import exampleDataInteractive from '../data/exampleGraphInteractive.json';
 import testScript1 from '../data/Test-Script-1.json';
@@ -507,8 +508,61 @@ const NodeParserDemoContent = ({ roomId }) => {
   const [solveResult, setSolveResult] = useState(null);
 
   const handleRun = async () => {
-    // Always load the local 3dm file as fallback demonstration
-    await loadFallback3dm();
+    try {
+      console.log('[Run] Converting graph to .gh and running...');
+      
+      // 1. Convert JSON to GH file
+      const ghResponse = await api.post('/json-to-gh', currentData, { responseType: 'arraybuffer' });
+      if (!ghResponse.data) throw new Error('No .gh file returned from backend');
+      
+      console.log('[Run] Received .gh file:', ghResponse.data.byteLength, 'bytes');
+
+      // 2. Upload GH file to backend (as base64)
+      const ghBase64 = btoa(String.fromCharCode(...new Uint8Array(ghResponse.data)));
+      console.log('[Run] Uploading .gh file to compute (', ghBase64.length, 'chars base64)');
+      
+      const uploadResponse = await api.post('/grasshopper/upload', {
+        ghFileBase64: ghBase64,
+        fileName: 'generated.gh',
+      });
+      
+      console.log('[Run] Upload response:', uploadResponse.data);
+      
+      const pointer = uploadResponse.data?.pointer;
+      if (!pointer) throw new Error('No pointer returned from upload');
+
+      // 3. Solve using pointer
+      console.log('[Run] Solving with pointer:', pointer);
+      const solveResponse = await api.post('/grasshopper/solve', {
+        algo: null,
+        pointer,
+        fileName: 'generated.gh',
+        values: [], // TODO: add param values if needed
+        cachesolve: true
+      });
+      
+      console.log('[Run] Solve completed, converting geometry...');
+      
+      // 4. Convert Rhino.Compute result to ThreeViewer format
+      const geometries = await convertRhinoComputeToThreeViewer(solveResponse.data);
+      
+      if (geometries && geometries.length > 0) {
+        console.log('[Run] Converted', geometries.length, 'geometries for visualization');
+        setSampleGeometry(geometries);
+        setSolveResult(null); // Use ThreeViewer, not ThreeViewerRhino
+        setIsViewerCollapsed(false);
+      } else {
+        console.warn('[Run] No geometry in Rhino.Compute response, loading demo...');
+        await loadFallback3dm();
+      }
+    } catch (err) {
+      console.error('[Run] Failed to run workflow:', err);
+      if (err.response) {
+        console.error('[Run] Error response:', err.response.status, err.response.data);
+      }
+      console.log('[Run] Loading fallback demo geometry...');
+      await loadFallback3dm();
+    }
   };
 
   const loadFallback3dm = async () => {
