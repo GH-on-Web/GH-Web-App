@@ -1,7 +1,7 @@
 import React, { Suspense, useMemo, useRef, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, PerspectiveCamera } from '@react-three/drei';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import * as THREE from 'three';
 
 /**
@@ -76,7 +76,7 @@ function MeshGeometry({ vertices, faces }) {
 /**
  * SceneContent - Renders all geometry meshes
  */
-function SceneContent({ geometry }) {
+function SceneContent({ geometry, theme }) {
   if (!geometry) {
     console.log('SceneContent: No geometry provided');
     return null;
@@ -107,7 +107,11 @@ function SceneContent({ geometry }) {
         );
       })}
       
-      <Grid args={[10, 10]} cellColor="#6f6f6f" sectionColor="#9d9d9d" />
+      <Grid 
+        args={[10, 10]} 
+        cellColor={theme?.palette?.mode === 'dark' ? '#6f6f6f' : '#cccccc'} 
+        sectionColor={theme?.palette?.mode === 'dark' ? '#9d9d9d' : '#999999'} 
+      />
     </>
   );
 }
@@ -118,6 +122,7 @@ function SceneContent({ geometry }) {
  */
 function ThreeViewer({ geometry }) {
   const containerRef = useRef(null);
+  const theme = useTheme();
 
   // Suppress ResizeObserver errors for this component
   useEffect(() => {
@@ -170,7 +175,12 @@ function ThreeViewer({ geometry }) {
       
       <Box 
         ref={containerRef}
-        sx={{ flexGrow: 1, position: 'relative', bgcolor: '#1a1a1a', overflow: 'hidden' }}
+        sx={{ 
+          flexGrow: 1, 
+          position: 'relative', 
+          bgcolor: theme.palette.mode === 'dark' ? '#1a1a1a' : '#f5f5f5',
+          overflow: 'hidden' 
+        }}
       >
         {geometry ? (
           <Canvas
@@ -191,7 +201,7 @@ function ThreeViewer({ geometry }) {
               maxDistance={20}
             />
             <Suspense fallback={null}>
-              <SceneContent geometry={geometry} />
+              <SceneContent geometry={geometry} theme={theme} />
             </Suspense>
           </Canvas>
         ) : (

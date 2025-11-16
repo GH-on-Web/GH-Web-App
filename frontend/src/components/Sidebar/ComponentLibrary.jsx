@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, List, ListItem, ListItemButton, ListItemText, Divider } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemButton, ListItemText, Divider, useTheme } from '@mui/material';
 import { NODE_TYPES, NODE_CATEGORIES } from '../../types/nodes';
 
 /**
@@ -7,6 +7,7 @@ import { NODE_TYPES, NODE_CATEGORIES } from '../../types/nodes';
  * Allows users to drag components onto the canvas
  */
 function ComponentLibrary({ onAddNode }) {
+  const theme = useTheme();
   const componentCategories = [
     {
       name: 'Primitives',
@@ -44,7 +45,7 @@ function ComponentLibrary({ onAddNode }) {
       
       {componentCategories.map((category, idx) => (
         <Box key={category.name}>
-          <Box sx={{ px: 2, py: 1, bgcolor: 'grey.100' }}>
+          <Box sx={{ px: 2, py: 1, bgcolor: theme.palette.mode === 'dark' ? 'grey.800' : 'grey.100' }}>
             <Typography variant="overline" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
               {category.name}
             </Typography>
