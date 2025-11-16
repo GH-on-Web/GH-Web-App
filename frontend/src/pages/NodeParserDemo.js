@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { useTheme } from '@mui/material';
@@ -328,6 +328,38 @@ const NodeParserDemoContent = ({ roomId }) => {
     // Update links in Liveblocks
     updateGraphLinks(formattedConnections);
   };
+
+  // Handle node data changes (like slider value updates)
+  const handleNodeDataChange = useCallback((nodeId, newData) => {
+    const isSimplifiedFormat = currentData.nodes && currentData.links;
+
+    if (isSimplifiedFormat) {
+      // Update the node's properties in the simplified format
+      const updatedNodes = currentData.nodes?.map(node => {
+        if (`node-${node.id}` === nodeId) {
+          // Update properties based on node type
+          const updatedProperties = { ...node.properties };
+
+          // Handle different data types
+          if (newData.value !== undefined) {
+            updatedProperties.Value = newData.value;
+          }
+          if (newData.min !== undefined) updatedProperties.Min = newData.min;
+          if (newData.max !== undefined) updatedProperties.Max = newData.max;
+          if (newData.step !== undefined) updatedProperties.Step = newData.step;
+          if (newData.text !== undefined) updatedProperties.Text = newData.text;
+
+          return {
+            ...node,
+            properties: updatedProperties
+          };
+        }
+        return node;
+      }) || [];
+
+      updateGraphNodes(updatedNodes);
+    }
+  }, [currentData, updateGraphNodes]);
 
   const handleNodesChange = (newNodes, newComponentInstance, deletedNodeIds, isPositionUpdate) => {
     // Detect format
@@ -727,6 +759,7 @@ const NodeParserDemoContent = ({ roomId }) => {
               graphData={currentData}
               onConnectionsChange={handleConnectionsChange}
               onNodesChange={handleNodesChange}
+              onNodeDataChange={handleNodeDataChange}
               componentsDatabase={componentsDatabase}
             />
           </div>

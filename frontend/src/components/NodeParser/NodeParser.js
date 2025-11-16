@@ -150,7 +150,7 @@ const createInteractiveNode = (component, instanceId, position) => {
  * Main NodeParser component that renders Grasshopper components using React Flow
  * Now with separate connection management and component search
  */
-const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChangeCallback, componentsDatabase }) => {
+const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChangeCallback, onNodeDataChange, componentsDatabase }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [error, setError] = useState(null);
@@ -159,8 +159,34 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
   const isInitialized = useRef(false);
   const nextInstanceId = useRef(1000); // Start from 1000 for new components
 
+  // Handler for interactive node value changes (sliders, inputs, etc.)
+  const handleInteractiveNodeChange = useCallback((nodeId, newValue) => {
+    console.log('[NodeParser] Node value changed:', nodeId, newValue);
+
+    // Update the React Flow node's data
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              value: newValue
+            }
+          };
+        }
+        return node;
+      })
+    );
+
+    // Notify parent to update the underlying graph data
+    if (onNodeDataChange) {
+      onNodeDataChange(nodeId, { value: newValue });
+    }
+  }, [setNodes, onNodeDataChange]);
+
   // Define custom node types
-  const nodeTypes = useMemo(() => ({ 
+  const nodeTypes = useMemo(() => ({
     grasshopperNode: GrasshopperNode,
     numberSlider: NumberSliderNode,
     panel: PanelNode,
@@ -218,13 +244,27 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
         const hasDatabase = componentsDatabase && componentsDatabase.length > 0;
         
         if (!isInitialized.current || nodesChanged || (hasDatabase && parsedNodes.length > 0)) {
-          // Preserve selection state when updating nodes
+          // Preserve selection state and inject onChange handler for interactive nodes
           setNodes((currentNodes) => {
             const selectedNodeIds = currentNodes.filter(n => n.selected).map(n => n.id);
-            return parsedNodes.map(node => ({
-              ...node,
-              selected: selectedNodeIds.includes(node.id)
-            }));
+            return parsedNodes.map(node => {
+              // For interactive nodes, inject the onChange handler
+              const interactiveNodeTypes = ['numberSlider', 'panel', 'booleanToggle', 'button', 'numberInput'];
+              if (interactiveNodeTypes.includes(node.type)) {
+                return {
+                  ...node,
+                  selected: selectedNodeIds.includes(node.id),
+                  data: {
+                    ...node.data,
+                    onChange: handleInteractiveNodeChange
+                  }
+                };
+              }
+              return {
+                ...node,
+                selected: selectedNodeIds.includes(node.id)
+              };
+            });
           });
           
           // Only mark as initialized if we have the database loaded (for simplified format)
