@@ -27,8 +27,8 @@ const api = axios.create({
  * Inner component that uses Liveblocks room for real-time collaboration
  */
 // Toggle backend save/load for .gh files (Load still uses backend, Save outputs JSON, Run uses fallback 3dm)
-const USE_BACKEND_LOAD = false;
-const USE_BACKEND_SAVE = false;
+const USE_BACKEND_LOAD = true;
+const USE_BACKEND_SAVE = true;
 
 const NodeParserDemoContent = ({ roomId }) => {
   const theme = useTheme();
