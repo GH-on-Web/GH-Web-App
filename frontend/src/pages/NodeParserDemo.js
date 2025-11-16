@@ -506,62 +506,112 @@ const NodeParserDemoContent = ({ roomId }) => {
 
   // Store solve result for later visualization
   const [solveResult, setSolveResult] = useState(null);
+  const [outputData, setOutputData] = useState([]);
 
   const handleRun = async () => {
     try {
       console.log('[Run] Converting graph to .gh and running...');
       
-      // 1. Convert JSON to GH file
+      // 1. Convert JSON to GH file (returns binary)
       const ghResponse = await api.post('/json-to-gh', currentData, { responseType: 'arraybuffer' });
       if (!ghResponse.data) throw new Error('No .gh file returned from backend');
       
       console.log('[Run] Received .gh file:', ghResponse.data.byteLength, 'bytes');
 
-      // 2. Upload GH file to backend (as base64)
+      // 2. Convert binary to base64
       const ghBase64 = btoa(String.fromCharCode(...new Uint8Array(ghResponse.data)));
-      console.log('[Run] Uploading .gh file to compute (', ghBase64.length, 'chars base64)');
+      console.log('[Run] Converted to base64 (', ghBase64.length, 'chars)');
       
-      const uploadResponse = await api.post('/grasshopper/upload', {
-        ghFileBase64: ghBase64,
-        fileName: 'generated.gh',
-      });
-      
-      console.log('[Run] Upload response:', uploadResponse.data);
-      
-      const pointer = uploadResponse.data?.pointer;
-      if (!pointer) throw new Error('No pointer returned from upload');
-
-      // 3. Solve using pointer
-      console.log('[Run] Solving with pointer:', pointer);
+      // 3. Solve directly with base64 algo
+      console.log('[Run] Solving with base64 algo...');
       const solveResponse = await api.post('/grasshopper/solve', {
-        algo: null,
-        pointer,
+        algo: ghBase64,
+        pointer: null,
         fileName: 'generated.gh',
         values: [], // TODO: add param values if needed
-        cachesolve: true
+        cachesolve: true,
+        absolutetolerance: 0.01,
+        angletolerance: 1.0,
+        modelunits: "Meters"
       });
       
-      console.log('[Run] Solve completed, converting geometry...');
+      console.log('[Run] Solve completed:', solveResponse.data);
       
-      // 4. Convert Rhino.Compute result to ThreeViewer format
-      const geometries = await convertRhinoComputeToThreeViewer(solveResponse.data);
+      // 4. Parse outputs from response
+      const geometryItems = [];
+      const dataItems = [];
       
-      if (geometries && geometries.length > 0) {
-        console.log('[Run] Converted', geometries.length, 'geometries for visualization');
-        setSampleGeometry(geometries);
-        setSolveResult(null); // Use ThreeViewer, not ThreeViewerRhino
-        setIsViewerCollapsed(false);
-      } else {
-        console.warn('[Run] No geometry in Rhino.Compute response, loading demo...');
-        await loadFallback3dm();
+      if (solveResponse.data?.values) {
+        console.log('[Run] Processing', solveResponse.data.values.length, 'output parameters');
+        
+        for (const output of solveResponse.data.values) {
+          const paramName = output.ParamName;
+          const innerTree = output.InnerTree || {};
+          
+          // Iterate through all paths in the tree
+          for (const [path, items] of Object.entries(innerTree)) {
+            for (const item of items) {
+              const itemType = item.type;
+              
+              // Check if it's a geometry type
+              if (itemType && itemType.startsWith('Rhino.Geometry.')) {
+                console.log(`[Run] Found geometry: ${paramName} (${itemType})`);
+                geometryItems.push({
+                  paramName,
+                  path,
+                  type: itemType,
+                  data: item.data
+                });
+              } else {
+                // It's a data type (string, number, etc.)
+                let value = item.data;
+                
+                // Parse if it's a JSON string
+                if (typeof value === 'string' && (value.startsWith('"') || value.startsWith('{') || value.startsWith('['))) {
+                  try {
+                    value = JSON.parse(value);
+                  } catch {}
+                }
+                
+                console.log(`[Run] Found data: ${paramName} = ${value} (${itemType})`);
+                dataItems.push({
+                  paramName,
+                  path,
+                  type: itemType,
+                  value
+                });
+              }
+            }
+          }
+        }
       }
+      
+      // 5. Convert geometry to ThreeViewer format
+      if (geometryItems.length > 0) {
+        console.log('[Run] Converting', geometryItems.length, 'geometry items...');
+        const geometries = await convertRhinoComputeToThreeViewer(solveResponse.data);
+        
+        if (geometries && geometries.length > 0) {
+          console.log('[Run] Converted', geometries.length, 'geometries for visualization');
+          setSampleGeometry(geometries);
+          setIsViewerCollapsed(false);
+        }
+      } else {
+        console.log('[Run] No geometry outputs found');
+        setSampleGeometry(null);
+      }
+      
+      // 6. Store data outputs for table display
+      setOutputData(dataItems);
+      setSolveResult(null);
+      
     } catch (err) {
       console.error('[Run] Failed to run workflow:', err);
       if (err.response) {
         console.error('[Run] Error response:', err.response.status, err.response.data);
       }
-      console.log('[Run] Loading fallback demo geometry...');
-      await loadFallback3dm();
+      alert(`Failed to run: ${err.message}`);
+      setOutputData([]);
     }
   };
 
@@ -746,6 +796,61 @@ const NodeParserDemoContent = ({ roomId }) => {
         )}
       </div>
 
+      {/* Output Data Table */}
+      {outputData.length > 0 && (
+        <div style={{
+          position: 'absolute',
+          bottom: '70px',
+          left: '10px',
+          right: isViewerCollapsed ? '10px' : '410px',
+          maxHeight: '200px',
+          overflowY: 'auto',
+          backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#ffffff',
+          border: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'}`,
+          borderRadius: '4px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          zIndex: 100
+        }}>
+          <div style={{
+            padding: '8px 12px',
+            background: theme.palette.mode === 'dark' ? '#333' : '#f5f5f5',
+            borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'}`,
+            fontSize: '12px',
+            fontWeight: 'bold',
+            color: theme.palette.mode === 'dark' ? '#ccc' : '#666'
+          }}>
+            Output Data ({outputData.length} items)
+          </div>
+          <table style={{
+            width: '100%',
+            fontSize: '12px',
+            borderCollapse: 'collapse',
+            color: theme.palette.mode === 'dark' ? '#ddd' : '#333'
+          }}>
+            <thead>
+              <tr style={{ backgroundColor: theme.palette.mode === 'dark' ? '#383838' : '#f9f9f9' }}>
+                <th style={{ padding: '6px 12px', textAlign: 'left', borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'}` }}>Parameter</th>
+                <th style={{ padding: '6px 12px', textAlign: 'left', borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'}` }}>Path</th>
+                <th style={{ padding: '6px 12px', textAlign: 'left', borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'}` }}>Type</th>
+                <th style={{ padding: '6px 12px', textAlign: 'left', borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'}` }}>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {outputData.map((item, idx) => (
+                <tr key={idx} style={{ borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#333' : '#eee'}` }}>
+                  <td style={{ padding: '6px 12px' }}>{item.paramName}</td>
+                  <td style={{ padding: '6px 12px', fontFamily: 'monospace', fontSize: '11px', color: theme.palette.mode === 'dark' ? '#888' : '#999' }}>{item.path}</td>
+                  <td style={{ padding: '6px 12px', fontSize: '11px', color: theme.palette.mode === 'dark' ? '#888' : '#999' }}>{item.type}</td>
+                  <td style={{ padding: '6px 12px', fontFamily: 'monospace', fontSize: '11px', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {typeof item.value === 'object' ? JSON.stringify(item.value) : String(item.value)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       {/* Floating action buttons */}
       <div className="demo-floating-controls">
         <button onClick={handleExportGraph} className="btn btn-save" title="Save graph as JSON file">
@@ -757,7 +862,7 @@ const NodeParserDemoContent = ({ roomId }) => {
         <button onClick={handleClear} className="btn btn-clear" title="Clear canvas">
           🗑️ Clear
         </button>
-        <button onClick={handleRun} className="btn btn-run" title="Export and run (coming soon)">
+        <button onClick={handleRun} className="btn btn-run" title="Convert to .gh and run with Rhino Compute">
           ▶ Run
         </button>
       </div>

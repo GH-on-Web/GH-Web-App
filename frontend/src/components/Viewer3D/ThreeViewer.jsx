@@ -156,12 +156,41 @@ function MeshGeometry({ vertices, faces }) {
 }
 
 /**
+ * ThreeObject - Component that renders a Three.js Object3D from Rhino3dmLoader
+ */
+function ThreeObject({ object }) {
+  if (!object) return null;
+  
+  // The object is already a Three.js Object3D with meshes
+  // We can use primitive to add it directly to the scene
+  return <primitive object={object} />;
+}
+
+/**
  * SceneContent - Renders all geometry meshes
  */
 function SceneContent({ geometry, theme }) {
   if (!geometry) {
     console.log('SceneContent: No geometry provided');
     return null;
+  }
+
+  // Check if this is a Three.js object from Rhino3dmLoader
+  if (geometry.type === 'three-object' && geometry.object) {
+    console.log('SceneContent: Rendering Three.js object from Rhino');
+    return (
+      <>
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[10, 10, 5]} intensity={1} />
+        <pointLight position={[-10, -10, -5]} intensity={0.5} />
+        <ThreeObject object={geometry.object} />
+        <Grid 
+          args={[10, 10]} 
+          cellColor={theme?.palette?.mode === 'dark' ? '#6f6f6f' : '#cccccc'} 
+          sectionColor={theme?.palette?.mode === 'dark' ? '#9d9d9d' : '#999999'} 
+        />
+      </>
+    );
   }
 
   // Check if this is demo geometry
