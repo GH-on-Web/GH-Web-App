@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { useTheme } from '@mui/material';
+import { RoomProvider } from '@liveblocks/react';
 import { NodeParser } from '../components/NodeParser';
+import { useGraphCollaboration } from '../hooks/useCollaboration';
+import CollaborationStatus from '../components/Collaboration/CollaborationStatus';
 import { POSITION_SCALE_FACTOR } from '../utils/nodeParser';
 import exampleData from '../data/exampleGraph.json';
 import exampleDataInteractive from '../data/exampleGraphInteractive.json';
@@ -8,16 +12,33 @@ import testScript1 from '../data/Test-Script-1.json';
 import './NodeParserDemo.css';
 
 /**
- * Demo page for the NodeParser component with real GH component structure
+ * Inner component that uses Liveblocks room for real-time collaboration
  */
-const NodeParserDemo = () => {
+const NodeParserDemoContent = ({ roomId }) => {
   const theme = useTheme();
-  const [jsonInput, setJsonInput] = useState(JSON.stringify(testScript1, null, 2));
-  const [currentData, setCurrentData] = useState(testScript1);
+  
+  // Collaboration mode toggle
+  const [isCollabMode, setIsCollabMode] = useState(false);
+  
+  // Use Liveblocks for collaborative state
+  const {
+    graphData: currentData,
+    updateGraphData,
+    updateGraphNodes,
+    updateGraphLinks,
+    isConnected,
+    others
+  } = useGraphCollaboration();
+  
+  const [jsonInput, setJsonInput] = useState(JSON.stringify(currentData, null, 2));
   const [parseError, setParseError] = useState(null);
-  const [connections, setConnections] = useState(testScript1.links || []);
   const [componentsDatabase, setComponentsDatabase] = useState([]);
   const [isLoadingDatabase, setIsLoadingDatabase] = useState(true);
+
+  // Sync JSON input when currentData changes from Liveblocks
+  useEffect(() => {
+    setJsonInput(JSON.stringify(currentData, null, 2));
+  }, [currentData]);
 
   // Load the components database
   useEffect(() => {
@@ -46,6 +67,14 @@ const NodeParserDemo = () => {
   }, []);
 
   const handleLoadFile = () => {
+    // Warn if others are connected and collab mode is active
+    if (isCollabMode && others.length > 0) {
+      const confirmed = window.confirm(
+        `${others.length} other user(s) are viewing this workspace. Loading a file will replace their view. Continue?`
+      );
+      if (!confirmed) return;
+    }
+    
     // Create a file input element
     const input = document.createElement('input');
     input.type = 'file';
@@ -59,9 +88,7 @@ const NodeParserDemo = () => {
           try {
             const fileContent = event.target.result;
             const parsed = JSON.parse(fileContent);
-            setJsonInput(fileContent);
-            setCurrentData(parsed);
-            setConnections(parsed.connections || []);
+            updateGraphData(parsed);
             setParseError(null);
           } catch (err) {
             setParseError('Failed to load file: ' + err.message);
@@ -75,32 +102,42 @@ const NodeParserDemo = () => {
   };
 
   const handleLoadExample = () => {
-    setJsonInput(JSON.stringify(testScript1, null, 2));
-    setCurrentData(testScript1);
-    setConnections(testScript1.links || []);
+    if (isCollabMode && others.length > 0) {
+      const confirmed = window.confirm(
+        `${others.length} other user(s) are viewing this workspace. Loading an example will replace their view. Continue?`
+      );
+      if (!confirmed) return;
+    }
+    updateGraphData(testScript1);
     setParseError(null);
   };
 
   const handleLoadVanillaExample = () => {
-    setJsonInput(JSON.stringify(exampleData, null, 2));
-    setCurrentData(exampleData);
-    setConnections(exampleData.connections || []);
+    if (isCollabMode && others.length > 0) {
+      const confirmed = window.confirm(
+        `${others.length} other user(s) are viewing this workspace. Loading an example will replace their view. Continue?`
+      );
+      if (!confirmed) return;
+    }
+    updateGraphData(exampleData);
     setParseError(null);
   };
   
   const handleLoadInteractiveExample = () => {
-    setJsonInput(JSON.stringify(exampleDataInteractive, null, 2));
-    setCurrentData(exampleDataInteractive);
-    setConnections(exampleDataInteractive.connections || []);
+    if (isCollabMode && others.length > 0) {
+      const confirmed = window.confirm(
+        `${others.length} other user(s) are viewing this workspace. Loading an example will replace their view. Continue?`
+      );
+      if (!confirmed) return;
+    }
+    updateGraphData(exampleDataInteractive);
     setParseError(null);
   };
 
   const handleParseJson = () => {
     try {
       const parsed = JSON.parse(jsonInput);
-      setCurrentData(parsed);
-      // Handle both formats: old format has "connections", new format has "links"
-      setConnections(parsed.connections || parsed.links || []);
+      updateGraphData(parsed);
       setParseError(null);
     } catch (err) {
       setParseError('Invalid JSON: ' + err.message);
@@ -109,15 +146,11 @@ const NodeParserDemo = () => {
 
   const handleClear = () => {
     const emptyData = { nodes: [], links: [] };
-    setJsonInput(JSON.stringify(emptyData, null, 2));
-    setCurrentData(emptyData);
-    setConnections([]);
+    updateGraphData(emptyData);
     setParseError(null);
   };
 
   const handleConnectionsChange = (newConnections) => {
-    setConnections(newConnections);
-    
     // Detect format and update accordingly
     const isSimplifiedFormat = currentData.nodes && currentData.links;
     
@@ -145,19 +178,8 @@ const NodeParserDemo = () => {
       });
     }
     
-    // Update current data with new connections to keep them in sync
-    const updatedData = isSimplifiedFormat
-      ? {
-          ...currentData,
-          links: formattedConnections
-        }
-      : {
-          ...currentData,
-          connections: newConnections
-        };
-    
-    setCurrentData(updatedData);
-    setJsonInput(JSON.stringify(updatedData, null, 2));
+    // Update links in Liveblocks
+    updateGraphLinks(formattedConnections);
   };
 
   const handleNodesChange = (newNodes, newComponentInstance, deletedNodeIds, isPositionUpdate) => {
@@ -171,23 +193,16 @@ const NodeParserDemo = () => {
           node => !deletedNodeIds.includes(`node-${node.id}`)
         ) || [];
         
-        const updatedData = {
-          nodes: updatedNodes,
-          links: currentData.links || []
-        };
-        setCurrentData(updatedData);
-        setJsonInput(JSON.stringify(updatedData, null, 2));
+        updateGraphNodes(updatedNodes);
       } else {
         const updatedInstances = currentData.componentInstances?.filter(
           inst => !deletedNodeIds.includes(`node-${inst.instanceId}`)
         ) || [];
         
-        const updatedData = {
+        updateGraphData({
           componentInstances: updatedInstances,
-          connections: connections
-        };
-        setCurrentData(updatedData);
-        setJsonInput(JSON.stringify(updatedData, null, 2));
+          connections: currentData.links || currentData.connections || []
+        });
       }
       return;
     }
@@ -237,21 +252,14 @@ const NodeParserDemo = () => {
           }
           
           const updatedNodes = [...(currentData.nodes || []), newSimplifiedNode];
-          const updatedData = {
-            nodes: updatedNodes,
-            links: currentData.links || []
-          };
-          setCurrentData(updatedData);
-          setJsonInput(JSON.stringify(updatedData, null, 2));
+          updateGraphNodes(updatedNodes);
         }
       } else {
         const updatedInstances = [...(currentData.componentInstances || []), newComponentInstance];
-        const updatedData = {
+        updateGraphData({
           componentInstances: updatedInstances,
-          connections: connections
-        };
-        setCurrentData(updatedData);
-        setJsonInput(JSON.stringify(updatedData, null, 2));
+          connections: currentData.links || currentData.connections || []
+        });
       }
       return;
     }
@@ -271,12 +279,7 @@ const NodeParserDemo = () => {
           return node;
         }) || [];
         
-        const updatedData = {
-          nodes: updatedNodes,
-          links: currentData.links || []
-        };
-        setCurrentData(updatedData);
-        setJsonInput(JSON.stringify(updatedData, null, 2));
+        updateGraphNodes(updatedNodes);
       } else {
         const updatedInstances = currentData.componentInstances?.map(inst => {
           const node = newNodes.find(n => n.id === `node-${inst.instanceId}`);
@@ -289,12 +292,10 @@ const NodeParserDemo = () => {
           return inst;
         }) || [];
         
-        const updatedData = {
+        updateGraphData({
           componentInstances: updatedInstances,
-          connections: connections
-        };
-        setCurrentData(updatedData);
-        setJsonInput(JSON.stringify(updatedData, null, 2));
+          connections: currentData.links || currentData.connections || []
+        });
       }
       return;
     }
@@ -304,7 +305,7 @@ const NodeParserDemo = () => {
   };
 
   const handleExportConnections = () => {
-    const connectionsJson = JSON.stringify(connections, null, 2);
+    const connectionsJson = JSON.stringify(currentData.links || currentData.connections || [], null, 2);
     // Create a downloadable file
     const blob = new Blob([connectionsJson], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -334,8 +335,39 @@ const NodeParserDemo = () => {
 
   return (
     <div className="node-parser-demo" data-theme={theme.palette.mode}>
+      {/* Collaboration toggle button */}
+      <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 102 }}>
+        <button 
+          onClick={() => setIsCollabMode(!isCollabMode)}
+          className="btn"
+          style={{
+            backgroundColor: isCollabMode ? '#4caf50' : theme.palette.mode === 'dark' ? '#424242' : '#e0e0e0',
+            color: isCollabMode ? 'white' : theme.palette.mode === 'dark' ? 'white' : 'black',
+            padding: '8px 16px',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}
+          title={isCollabMode ? 'Stop collaboration mode' : 'Start collaboration mode'}
+        >
+          {isCollabMode ? '🛑 Stop Collab' : '🚀 Start Collab'}
+        </button>
+      </div>
+
+      {/* Collaboration status indicator - only show in collab mode */}
+      {isCollabMode && (
+        <div style={{ position: 'absolute', top: '70px', left: '20px', zIndex: 101 }}>
+          <CollaborationStatus workspaceId={roomId} />
+        </div>
+      )}
+      
       {/* Floating action buttons */}
       <div className="demo-floating-controls">
+        <button onClick={handleExportGraph} className="btn btn-save" title="Save graph as JSON file">
+          💾 Save
+        </button>
         <button onClick={handleLoadFile} className="btn btn-load" title="Load JSON file">
           📁 Load File
         </button>
@@ -365,6 +397,27 @@ const NodeParserDemo = () => {
         />
       </div>
     </div>
+  );
+};
+
+/**
+ * Wrapper component that provides RoomProvider for collaboration
+ * Note: LiveblocksProvider is in App.js, so RoomProvider can be used here
+ */
+const NodeParserDemo = () => {
+  const { workspaceId } = useParams();
+  const roomId = workspaceId || 'nodeparser-default';
+
+  return (
+    <RoomProvider 
+      id={roomId}
+      initialPresence={{}}
+      initialStorage={{
+        graphData: testScript1, // Initial data for new rooms
+      }}
+    >
+      <NodeParserDemoContent roomId={roomId} />
+    </RoomProvider>
   );
 };
 

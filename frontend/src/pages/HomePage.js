@@ -8,7 +8,9 @@ import {
   TextField, 
   Paper, 
   Stack,
-  Divider
+  Divider,
+  ToggleButton,
+  ToggleButtonGroup
 } from '@mui/material';
 import { nanoid } from 'nanoid';
 
@@ -16,13 +18,19 @@ function HomePage() {
   const navigate = useNavigate();
   const [workspaceId, setWorkspaceId] = useState('');
   const [username, setUsername] = useState('');
+  const [workspaceType, setWorkspaceType] = useState('graph-editor'); // 'graph-editor' or 'workspace3dm'
 
   const handleCreateWorkspace = () => {
     const newWorkspaceId = nanoid();
     const user = username || `User_${nanoid(6)}`;
     // Store username in localStorage
     localStorage.setItem('username', user);
-    navigate(`/workspace3dm/${newWorkspaceId}`);
+    
+    if (workspaceType === 'graph-editor') {
+      navigate(`/node-parser/${newWorkspaceId}`);
+    } else {
+      navigate(`/workspace3dm/${newWorkspaceId}`);
+    }
   };
 
   const handleJoinWorkspace = () => {
@@ -32,7 +40,12 @@ function HomePage() {
     }
     const user = username || `User_${nanoid(6)}`;
     localStorage.setItem('username', user);
-    navigate(`/workspace3dm/${workspaceId.trim()}`);
+    
+    if (workspaceType === 'graph-editor') {
+      navigate(`/node-parser/${workspaceId.trim()}`);
+    } else {
+      navigate(`/workspace3dm/${workspaceId.trim()}`);
+    }
   };
 
   return (
@@ -48,10 +61,33 @@ function HomePage() {
         <Stack spacing={3}>
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
+            Workspace Type
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Choose which type of workspace to create or join
+          </Typography>
+          <ToggleButtonGroup
+            value={workspaceType}
+            exclusive
+            onChange={(e, newType) => newType && setWorkspaceType(newType)}
+            fullWidth
+            sx={{ mb: 2 }}
+          >
+            <ToggleButton value="graph-editor">
+              Graph Editor
+            </ToggleButton>
+            <ToggleButton value="workspace3dm">
+              Workspace 3DM
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Paper>
+
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6" gutterBottom>
             Create New Workspace
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Start a new collaborative workspace
+            Start a new collaborative {workspaceType === 'graph-editor' ? 'graph editor' : '3D workspace'}
           </Typography>
           <TextField
             fullWidth

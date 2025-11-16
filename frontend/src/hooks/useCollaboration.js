@@ -47,3 +47,64 @@ export function useCollaboration() {
   };
 }
 
+/**
+ * useGraphCollaboration - Hook for managing graph data collaboration (NodeParserDemo)
+ * Handles the simplified graph format with nodes and links
+ * @returns {Object} Collaboration state and functions
+ */
+export function useGraphCollaboration() {
+  const status = useStatus();
+  const others = useOthers();
+  
+  // Get graph data from Liveblocks storage
+  const storageRoot = useStorage((root) => root);
+  const graphData = storageRoot?.graphData ?? { nodes: [], links: [] };
+  
+  // Mutation to update entire graph data
+  const updateGraphData = useMutation(({ storage }, newGraphData) => {
+    if (!storage) {
+      console.error('Storage not available');
+      return;
+    }
+    storage.set('graphData', newGraphData);
+  }, []);
+  
+  // Mutation to update just nodes
+  const updateGraphNodes = useMutation(({ storage }, newNodes) => {
+    if (!storage) {
+      console.error('Storage not available');
+      return;
+    }
+    const currentData = storage.get('graphData') || { nodes: [], links: [] };
+    storage.set('graphData', {
+      ...currentData,
+      nodes: newNodes
+    });
+  }, []);
+  
+  // Mutation to update just links
+  const updateGraphLinks = useMutation(({ storage }, newLinks) => {
+    if (!storage) {
+      console.error('Storage not available');
+      return;
+    }
+    const currentData = storage.get('graphData') || { nodes: [], links: [] };
+    storage.set('graphData', {
+      ...currentData,
+      links: newLinks
+    });
+  }, []);
+  
+  const isConnected = status === 'connected';
+  
+  return {
+    connectionStatus: status,
+    others,
+    isConnected,
+    graphData: graphData || { nodes: [], links: [] },
+    updateGraphData,
+    updateGraphNodes,
+    updateGraphLinks,
+  };
+}
+

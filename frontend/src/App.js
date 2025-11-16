@@ -50,8 +50,22 @@ function App() {
           <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <AppBar position="static">
               <Toolbar variant="dense" sx={{ minHeight: 48 }}>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontSize: '1.1rem' }}>
-                  GH Web Workspace
+                <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <svg 
+                    width="24" 
+                    height="24" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    xmlns="http://www.w3.org/2000/svg"
+                    style={{ display: 'inline-block' }}
+                  >
+                    <path 
+                      d="M19.35 10.04C18.67 6.59 15.64 4 12 4C9.11 4 6.6 5.64 5.35 8.04C2.34 8.36 0 10.91 0 14C0 17.31 2.69 20 6 20H19C21.76 20 24 17.76 24 15C24 12.36 21.95 10.22 19.35 10.04Z" 
+                      fill="currentColor"
+                      opacity="0.9"
+                    />
+                  </svg>
+                  CloudHopper
                 </Typography>
                 <Button color="inherit" component={Link} to="/" size="small">
                   Home
@@ -79,6 +93,7 @@ function App() {
                 <Route path="/workspace3dm" element={<Workspace3DMPage />} />
                 <Route path="/workspace3dm/:workspaceId" element={<Workspace3DMPage />} />
                 <Route path="/node-parser" element={<NodeParserDemo />} />
+                <Route path="/node-parser/:workspaceId" element={<NodeParserDemo />} />
                 {/* <Route path="/interactive" element={<InteractiveNodesDemo />} /> */}
                 <Route path="/docs" element={<DocumentationPage />} />
               </Routes>

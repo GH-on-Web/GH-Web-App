@@ -45,6 +45,15 @@
   background: #0b7dda;
 }
 
+.btn-save {
+  background: #1976d2;
+  color: white;
+}
+
+.btn-save:hover {
+  background: #1565c0;
+}
+
 .btn-clear {
   background: #757575;
   color: white;
