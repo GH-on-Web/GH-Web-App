@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, useMediaQuery } from '@mui/material';
 import { ReactFlow, Background, Controls, MiniMap, Panel } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import '../components/Canvas/FlowCanvas.css';
 import useWorkspaceStore from '../store/workspaceStore';
 import useThemeStore from '../store/themeStore';
 import useViewModeStore from '../store/viewModeStore';
@@ -30,6 +31,7 @@ function WorkspacePage() {
 
       {/* React Flow Layer (in front) */}
       <Box
+        data-theme={colorMode}
         sx={{
           position: 'absolute',
           top: 0,
@@ -76,8 +78,20 @@ function WorkspacePage() {
             type: 'default',
           }}
         >
-          <MiniMap />
-          <Controls />
+          <MiniMap 
+            style={{
+              bottom: 20,
+              right: 20,
+            }}
+          />
+          <Controls 
+            showZoom={false}
+            showInteractive={false}
+            style={{
+              bottom: 20,
+              left: 20,
+            }}
+          />
           <Background gap={12} size={1} style={{ opacity: 0.2 }} />
         </ReactFlow>
       </Box>
