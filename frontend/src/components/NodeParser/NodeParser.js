@@ -205,6 +205,7 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
           const result = parseSimplifiedGraph(graphData, componentsDatabase || []);
           parsedNodes = result.nodes;
           parsedEdges = result.edges;
+          console.log('[NodeParser] parseSimplifiedGraph returned:', parsedNodes.length, 'nodes and', parsedEdges.length, 'edges');
         } else {
           // Use old parser for backward compatibility
           const result = parseGrasshopperGraph(graphData);
@@ -237,7 +238,11 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
         const edgesChanged = parsedEdges.length !== edges.length;
         
         if (!isInitialized.current || edgesChanged || (hasDatabase && parsedEdges.length > 0 && edges.length === 0)) {
+          console.log('[NodeParser] Setting edges - current:', edges.length, 'new:', parsedEdges.length);
+          console.log('[NodeParser] Edges being set:', parsedEdges.map(e => `${e.source}->${e.target}`));
           setEdges(parsedEdges);
+        } else {
+          console.log('[NodeParser] Skipping edge update - isInitialized:', isInitialized.current, 'edgesChanged:', edgesChanged, 'current:', edges.length, 'parsed:', parsedEdges.length);
         }
         
         // Update connection manager

@@ -27,7 +27,9 @@ const api = axios.create({
  * Inner component that uses Liveblocks room for real-time collaboration
  */
 // Toggle this to enable/disable backend save logic
-const USE_BACKEND_SAVE = true;
+// NOTE: Backend .gh file generation is not yet functional - generated files cannot be reopened
+// TODO: Implement proper .gh file generation using Grasshopper SDK
+const USE_BACKEND_SAVE = false;
 
 const NodeParserDemoContent = ({ roomId }) => {
   const theme = useTheme();
@@ -174,6 +176,14 @@ const NodeParserDemoContent = ({ roomId }) => {
                   console.log('[Load] Nodes count:', parsed.nodes?.length);
                   console.log('[Load] Parsed has links?', !!parsed.links);
                   console.log('[Load] Links count:', parsed.links?.length);
+                  
+                  // Log all links to see which ones exist
+                  if (parsed.links && parsed.links.length > 0) {
+                    console.log('[Load] All links from parsed data:');
+                    parsed.links.forEach((link, idx) => {
+                      console.log(`  Link ${idx}:`, link);
+                    });
+                  }
                   
                   updateGraphData(parsed);
                   setParseError(null);
