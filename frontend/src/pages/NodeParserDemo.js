@@ -26,9 +26,8 @@ const api = axios.create({
 /**
  * Inner component that uses Liveblocks room for real-time collaboration
  */
-// Toggle this to enable/disable backend save logic
-// NOTE: Backend .gh file generation is not yet functional - generated files cannot be reopened
-// TODO: Implement proper .gh file generation using Grasshopper SDK
+// Toggle backend save/load for .gh files (Load still uses backend, Save outputs JSON, Run uses fallback 3dm)
+const USE_BACKEND_LOAD = false;
 const USE_BACKEND_SAVE = false;
 
 const NodeParserDemoContent = ({ roomId }) => {
@@ -102,13 +101,13 @@ const NodeParserDemoContent = ({ roomId }) => {
     const input = document.createElement('input');
     input.type = 'file';
     // Only allow .gh for backend, .json for local
-    input.accept = USE_BACKEND_SAVE ? '.gh' : '.json';
+    input.accept = USE_BACKEND_LOAD ? '.gh' : '.json';
 
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
-      if (USE_BACKEND_SAVE) {
+      if (USE_BACKEND_LOAD) {
         // Backend logic: read .gh file, convert to base64, send to backend
         const reader = new FileReader();
         reader.onload = async (event) => {
@@ -508,39 +507,32 @@ const NodeParserDemoContent = ({ roomId }) => {
   const [solveResult, setSolveResult] = useState(null);
 
   const handleRun = async () => {
-    if (USE_BACKEND_SAVE) {
-      try {
-        // 1. Convert JSON to GH file
-        const ghResponse = await api.post('/json-to-gh', currentData, { responseType: 'arraybuffer' });
-        if (!ghResponse.data) throw new Error('No .gh file returned from backend');
+    // Always load the local 3dm file as fallback demonstration
+    await loadFallback3dm();
+  };
 
-        // 2. Upload GH file to backend (as base64)
-        const ghBase64 = btoa(String.fromCharCode(...new Uint8Array(ghResponse.data)));
-        const uploadResponse = await api.post('/grasshopper/upload', {
-          ghFileBase64: ghBase64,
-          fileName: 'generated.gh',
-        });
-        const pointer = uploadResponse.data?.pointer;
-        if (!pointer) throw new Error('No pointer returned from upload');
-
-        // 3. Solve using pointer
-        const solveResponse = await api.post('/grasshopper/solve', {
-          algo: null,
-          pointer,
-          fileName: 'generated.gh',
-          values: [], // TODO: add param values if needed
-          cachesolve: true
-        });
-        setSolveResult(solveResponse.data);
-        // TODO: visualize solveResponse.data
-        // For now, just log it
-        console.log('Grasshopper solve result:', solveResponse.data);
-      } catch (err) {
-        alert('Failed to run workflow: ' + (err?.response?.data?.error?.message || err.message));
-      }
-    } else {
-      // Old demo logic
-      generateSampleGeometry();
+  const loadFallback3dm = async () => {
+    try {
+      // For now, just show a demo geometry instead of trying to load .3dm
+      // TODO: Implement proper 3dm file loading when rhino3dm WASM issues are resolved
+      const demoGeometry = {
+        type: 'twisted-box',
+        width: 10,
+        height: 10,
+        depth: 50,
+        twist: Math.PI / 2,
+        segments: 20,
+        position: [0, 0, 0],
+        color: [0.3, 0.7, 1.0, 1.0]
+      };
+      
+      setSampleGeometry(demoGeometry);
+      setSolveResult(null); // Clear solve result to use ThreeViewer
+      setIsViewerCollapsed(false); // Open the viewer to show the result
+      console.log('Loaded demo geometry for demonstration');
+    } catch (err) {
+      console.error('Failed to load demo geometry:', err);
+      alert('Failed to load 3D preview.');
     }
   };
 
@@ -624,7 +616,7 @@ const NodeParserDemoContent = ({ roomId }) => {
                   3D Preview {sampleGeometry ? '(Sample Cube)' : '(No geometry)'}
                 </div>
                 <ErrorBoundary>
-                  {USE_BACKEND_SAVE && solveResult ? (
+                  {solveResult ? (
                     <ThreeViewerRhino solveResult={solveResult} />
                   ) : (
                     <ThreeViewer geometry={sampleGeometry} />
