@@ -211,6 +211,8 @@ export const parseSimplifiedGraph = (simplifiedData, componentsDatabase) => {
     // Check if this is an interactive node type
     const interactiveType = INTERACTIVE_NODE_MAPPING[guid];
     
+    console.log(`Node ${id} (${nickname}) - GUID: ${guid}, Interactive type: ${interactiveType}`);
+    
     if (interactiveType) {
       // Create interactive node
       return createInteractiveNodeFromSimplified(id, guid, nickname, position, properties, interactiveType);

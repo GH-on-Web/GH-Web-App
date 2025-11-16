@@ -91,6 +91,7 @@ function ComputeTestPage() {
 
   const [ghFile, setGhFile] = useState(null);
   const [ghResult, setGhResult] = useState('');
+  const [ghParsedJson, setGhParsedJson] = useState('');
   const [ghLoading, setGhLoading] = useState(false);
   const [ghError, setGhError] = useState('');
 
@@ -180,6 +181,27 @@ function ComputeTestPage() {
       const payload = { ghFileBase64, fileName: ghFile.name };
       const result = await computeStore.parseGhToJson(payload);
       setGhResult(JSON.stringify(result, null, 2));
+      
+      // Extract and parse the nested JSON from gh_json parameter
+      try {
+        const ghJsonParam = result?.values?.find(v => v.ParamName === 'gh_json');
+        if (ghJsonParam) {
+          const innerTree = ghJsonParam.InnerTree?.['{0}']?.[0];
+          if (innerTree?.data) {
+            // The data is double-escaped: first parse removes outer quotes, second parse gets the actual JSON
+            const firstParse = JSON.parse(innerTree.data);
+            const actualJson = JSON.parse(firstParse);
+            setGhParsedJson(JSON.stringify(actualJson, null, 2));
+          } else {
+            setGhParsedJson('');
+          }
+        } else {
+          setGhParsedJson('');
+        }
+      } catch (parseErr) {
+        console.warn('Could not parse nested gh_json:', parseErr);
+        setGhParsedJson('');
+      }
     } catch (err) {
       setGhError(err.message || 'Conversion failed');
     } finally {
@@ -201,14 +223,29 @@ function ComputeTestPage() {
     }
 
     try {
+      console.log('[JSON-to-GH Frontend] Sending payload to backend:', parsed);
       const buffer = await computeStore.jsonToGh(parsed);
+      console.log('[JSON-to-GH Frontend] Received buffer from backend:', buffer);
+      console.log('[JSON-to-GH Frontend] Buffer type:', buffer.constructor.name);
+      console.log('[JSON-to-GH Frontend] Buffer byteLength:', buffer.byteLength);
+      
+      if (buffer.byteLength > 0) {
+        const uint8View = new Uint8Array(buffer);
+        console.log('[JSON-to-GH Frontend] First 20 bytes as hex:', 
+          Array.from(uint8View.slice(0, 20)).map(b => b.toString(16).padStart(2, '0')).join(' ')
+        );
+      }
+      
       if (jsonToGhDownload?.url) {
         URL.revokeObjectURL(jsonToGhDownload.url);
       }
       const blob = new Blob([buffer], { type: 'application/octet-stream' });
+      console.log('[JSON-to-GH Frontend] Created blob, size:', blob.size);
       const url = URL.createObjectURL(blob);
       setJsonToGhDownload({ url, name: `converted-${Date.now()}.gh` });
+      console.log('[JSON-to-GH Frontend] Download ready');
     } catch (err) {
+      console.error('[JSON-to-GH Frontend] Error:', err);
       setJsonToGhError(err.message || 'Conversion failed');
     } finally {
       setJsonToGhLoading(false);
@@ -269,7 +306,8 @@ function ComputeTestPage() {
   };
 
   return (
-    <Container sx={{ py: 4 }}>
+    <Box sx={{ height: '100vh', overflow: 'auto' }}>
+      <Container sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom>
         Compute Gateway Test
       </Typography>
@@ -298,7 +336,7 @@ function ComputeTestPage() {
           </Paper>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={8}>
           <Paper variant="outlined" sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography variant="h6">GH → JSON</Typography>
             <Typography variant="body2" color="text.secondary">
@@ -313,9 +351,20 @@ function ComputeTestPage() {
                 {ghError}
               </Typography>
             )}
-            <Box component="pre" sx={{ bgcolor: 'background.paper', p: 2, borderRadius: 1, minHeight: 120, overflow: 'auto' }}>
-              {ghResult || 'JSON output will appear here'}
-            </Box>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" gutterBottom>Parsed GH JSON</Typography>
+                <Box component="pre" sx={{ bgcolor: 'background.paper', p: 2, borderRadius: 1, minHeight: 120, maxHeight: 400, overflow: 'auto', fontSize: '0.75rem' }}>
+                  {ghParsedJson || 'Parsed graph structure will appear here'}
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" gutterBottom>Full Response</Typography>
+                <Box component="pre" sx={{ bgcolor: 'background.paper', p: 2, borderRadius: 1, minHeight: 120, maxHeight: 400, overflow: 'auto', fontSize: '0.75rem' }}>
+                  {ghResult || 'Full JSON output will appear here'}
+                </Box>
+              </Grid>
+            </Grid>
           </Paper>
         </Grid>
 
@@ -418,7 +467,8 @@ function ComputeTestPage() {
           </Paper>
         </Grid>
       </Grid>
-    </Container>
+      </Container>
+    </Box>
   );
 }
 

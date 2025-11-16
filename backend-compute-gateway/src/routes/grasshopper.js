@@ -158,8 +158,11 @@ router.post('/solve', async (req, res, next) => {
       console.log(`[grasshopper] Solving with pointer ${pointer} at ${solveUrl}`);
     } else {
       console.log(`[grasshopper] Solving ${fileName} with base64 algo at ${solveUrl}`);
+      console.log(`[grasshopper] algo length: ${algo?.length || 0} chars`);
     }
-    console.log(`[grasshopper] Parameters:`, values.map(v => v.ParamName).join(', '));
+    console.log(`[grasshopper] Parameters:`, values.map(v => v.ParamName).join(', ') || 'none');
+    console.log(`[grasshopper] Payload keys:`, Object.keys(solvePayload));
+    console.log(`[grasshopper] Full payload:`, JSON.stringify(solvePayload, null, 2));
     
     const solveResponse = await axios.post(solveUrl, solvePayload, {
       headers: buildHeaders({ 'Content-Type': 'application/json' }),
@@ -168,6 +171,9 @@ router.post('/solve', async (req, res, next) => {
     });
     
     console.log(`[grasshopper] Solve response status: ${solveResponse.status}`);
+    if (solveResponse.status >= 400) {
+      console.error(`[grasshopper] Error response:`, JSON.stringify(solveResponse.data, null, 2));
+    }
     
     // Return the solve results
     return res.status(solveResponse.status).json(solveResponse.data);

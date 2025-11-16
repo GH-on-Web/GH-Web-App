@@ -59,9 +59,16 @@ const useComputeStore = create((set, get) => ({
 
   async jsonToGh(payload) {
     // Returns an ArrayBuffer for the GH file; UI can turn it into a Blob/download.
+    console.log('[computeStore] jsonToGh called with payload:', payload);
+    console.log('[computeStore] Payload type:', typeof payload);
+    console.log('[computeStore] Payload keys:', Object.keys(payload));
+    const bodyString = JSON.stringify(payload);
+    console.log('[computeStore] Body string length:', bodyString.length);
+    console.log('[computeStore] Body string preview:', bodyString.substring(0, 200));
+    
     return request('/json-to-gh', {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: bodyString,
     });
   },
 

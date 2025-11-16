@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { useTheme } from '@mui/material';
 import { IconButton, Box, Button } from '@mui/material';
@@ -10,16 +11,28 @@ import CollaborationStatus from '../components/Collaboration/CollaborationStatus
 import { LiveCursorsContainer } from '../components/Collaboration/LiveCursors';
 import { CommentsPanel } from '../components/Collaboration/CommentsPanel';
 import ThreeViewer from '../components/Viewer3D/ThreeViewer';
+import ThreeViewerRhino from '../components/Viewer3D/ThreeViewerRhino';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { POSITION_SCALE_FACTOR } from '../utils/nodeParser';
+import { convertRhinoComputeToThreeViewer } from '../utils/rhinoGeometryConverter';
 import exampleData from '../data/exampleGraph.json';
 import exampleDataInteractive from '../data/exampleGraphInteractive.json';
 import testScript1 from '../data/Test-Script-1.json';
 import './NodeParserDemo.css';
 
+// Configure axios to use the backend URL
+const BACKEND_URL = process.env.REACT_APP_COMPUTE_GATEWAY_URL || 'http://localhost:4001';
+const api = axios.create({
+  baseURL: BACKEND_URL,
+});
+
 /**
  * Inner component that uses Liveblocks room for real-time collaboration
  */
+// Toggle backend save/load for .gh files (Load still uses backend, Save outputs JSON, Run uses fallback 3dm)
+const USE_BACKEND_LOAD = true;
+const USE_BACKEND_SAVE = true;
+
 const NodeParserDemoContent = ({ roomId }) => {
   const theme = useTheme();
   const self = useSelf();
@@ -105,15 +118,118 @@ const NodeParserDemoContent = ({ roomId }) => {
       );
       if (!confirmed) return;
     }
-    
+
     // Create a file input element
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.json';
-    
-    input.onchange = (e) => {
+    // Only allow .gh for backend, .json for local
+    input.accept = USE_BACKEND_LOAD ? '.gh' : '.json';
+
+    input.onchange = async (e) => {
       const file = e.target.files[0];
-      if (file) {
+      if (!file) return;
+
+      if (USE_BACKEND_LOAD) {
+        // Backend logic: read .gh file, convert to base64, send to backend
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          try {
+            // Convert file to base64
+            const arrayBuffer = event.target.result;
+            const uint8Array = new Uint8Array(arrayBuffer);
+            const ghBase64 = btoa(String.fromCharCode(...uint8Array));
+            
+            console.log(`[Load] Sending .gh file (${ghBase64.length} chars base64) to backend`);
+            
+            const response = await api.post('/gh-to-json', {
+              ghFileBase64: ghBase64,
+              fileName: file.name,
+            });
+            
+            console.log('[Load] Backend response:', response.data);
+            
+            // The backend returns the full Rhino Compute response
+            // We need to extract the JSON from the output parameter
+            if (response.data && response.data.values) {
+              console.log('[Load] Response has', response.data.values.length, 'output parameters');
+              
+              // Log all parameter names to help debugging
+              response.data.values.forEach((v, idx) => {
+                console.log(`[Load] Parameter ${idx}: ${v.ParamName}`);
+              });
+              
+              // Look for the output parameter with the JSON string
+              // Try multiple possible parameter names
+              const jsonOutput = response.data.values.find(v => 
+                v.ParamName && (
+                  v.ParamName.includes('json') || 
+                  v.ParamName.includes('JSON') ||
+                  v.ParamName.includes('Set String') || 
+                  v.ParamName.includes('Output') ||
+                  v.ParamName.includes('RH_OUT')
+                )
+              );
+              
+              if (jsonOutput && jsonOutput.InnerTree) {
+                console.log('[Load] Found output parameter:', jsonOutput.ParamName);
+                const firstKey = Object.keys(jsonOutput.InnerTree)[0];
+                console.log('[Load] InnerTree keys:', Object.keys(jsonOutput.InnerTree));
+                
+                if (firstKey && jsonOutput.InnerTree[firstKey].length > 0) {
+                  const item = jsonOutput.InnerTree[firstKey][0];
+                  console.log('[Load] First item type:', item.type);
+                  let jsonString = item.data;
+                  console.log('[Load] Extracted JSON string length:', jsonString?.length);
+                  console.log('[Load] Extracted JSON string (first 300 chars):', jsonString?.substring(0, 300) + '...');
+                  
+                  // The JSON might be double-encoded (JSON string containing JSON string)
+                  // Try parsing once, and if result is still a string, parse again
+                  let parsed = JSON.parse(jsonString);
+                  console.log('[Load] First parse result type:', typeof parsed);
+                  
+                  if (typeof parsed === 'string') {
+                    console.log('[Load] JSON was double-encoded, parsing again...');
+                    parsed = JSON.parse(parsed);
+                  }
+                  
+                  console.log('[Load] Final parsed object:', parsed);
+                  console.log('[Load] Parsed has nodes?', !!parsed.nodes);
+                  console.log('[Load] Nodes count:', parsed.nodes?.length);
+                  console.log('[Load] Parsed has links?', !!parsed.links);
+                  console.log('[Load] Links count:', parsed.links?.length);
+                  
+                  // Log all links to see which ones exist
+                  if (parsed.links && parsed.links.length > 0) {
+                    console.log('[Load] All links from parsed data:');
+                    parsed.links.forEach((link, idx) => {
+                      console.log(`  Link ${idx}:`, link);
+                    });
+                  }
+                  
+                  updateGraphData(parsed);
+                  setParseError(null);
+                  console.log('[Load] Successfully loaded graph with', parsed.nodes?.length || 0, 'nodes and', parsed.links?.length || 0, 'links');
+                } else {
+                  console.error('[Load] InnerTree is empty or missing data');
+                  setParseError('Backend response missing JSON data in InnerTree.');
+                }
+              } else {
+                console.error('[Load] Could not find output parameter with JSON');
+                console.error('[Load] Available parameters:', response.data.values.map(v => v.ParamName).join(', '));
+                setParseError('Backend response missing expected output parameter. Available: ' + 
+                  response.data.values.map(v => v.ParamName).join(', '));
+              }
+            } else {
+              setParseError('Backend did not return valid response structure.');
+            }
+          } catch (err) {
+            console.error('[Load] Error:', err);
+            setParseError('Failed to load file from backend: ' + (err?.response?.data?.error?.message || err.message));
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        // Old local logic: read and parse JSON file
         const reader = new FileReader();
         reader.onload = (event) => {
           try {
@@ -128,7 +244,7 @@ const NodeParserDemoContent = ({ roomId }) => {
         reader.readAsText(file);
       }
     };
-    
+
     input.click();
   };
 
@@ -363,24 +479,186 @@ const NodeParserDemoContent = ({ roomId }) => {
     URL.revokeObjectURL(url);
   };
 
-  const handleExportGraph = () => {
-    const graphJson = JSON.stringify(currentData, null, 2);
-    // Create a downloadable file
-    const blob = new Blob([graphJson], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'grasshopper-graph.json';
-    a.click();
-    URL.revokeObjectURL(url);
+
+  // Save button: backend or local logic
+  const handleExportGraph = async () => {
+    if (USE_BACKEND_SAVE) {
+      try {
+        // POST to backend /json-to-gh endpoint
+        const response = await api.post(
+          '/json-to-gh',
+          currentData,
+          { responseType: 'arraybuffer' }
+        );
+        // Check for Grasshopper file in response
+        const contentType = response.headers['content-type'] || '';
+        if (contentType.includes('application/octet-stream') || response.data) {
+          // Create a blob and trigger download
+          const blob = new Blob([response.data], { type: 'application/octet-stream' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'generated.gh';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 100);
+        } else {
+          alert('Backend did not return a valid .gh file.');
+        }
+      } catch (err) {
+        alert('Failed to generate .gh file: ' + (err?.response?.data?.error?.message || err.message));
+      }
+    } else {
+      // Old local save logic (JSON)
+      const graphJson = JSON.stringify(currentData, null, 2);
+      const blob = new Blob([graphJson], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'grasshopper-graph.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
-  const handleRun = () => {
-    // Export current canvas graph (will be replaced with backend call later)
-    //handleExportGraph();
-    
-    // Generate sample geometry for 3D viewer
-    generateSampleGeometry();
+
+  // Store solve result for later visualization
+  const [solveResult, setSolveResult] = useState(null);
+  const [outputData, setOutputData] = useState([]);
+
+  const handleRun = async () => {
+    try {
+      console.log('[Run] Converting graph to .gh and running...');
+      
+      // 1. Convert JSON to GH file (returns binary)
+      const ghResponse = await api.post('/json-to-gh', currentData, { responseType: 'arraybuffer' });
+      if (!ghResponse.data) throw new Error('No .gh file returned from backend');
+      
+      console.log('[Run] Received .gh file:', ghResponse.data.byteLength, 'bytes');
+
+      // 2. Convert binary to base64
+      const ghBase64 = btoa(String.fromCharCode(...new Uint8Array(ghResponse.data)));
+      console.log('[Run] Converted to base64 (', ghBase64.length, 'chars)');
+      
+      // 3. Solve directly with base64 algo
+      console.log('[Run] Solving with base64 algo...');
+      const solveResponse = await api.post('/grasshopper/solve', {
+        algo: ghBase64,
+        pointer: null,
+        fileName: 'generated.gh',
+        values: [], // TODO: add param values if needed
+        cachesolve: true,
+        absolutetolerance: 0.01,
+        angletolerance: 1.0,
+        modelunits: "Meters"
+      });
+      
+      console.log('[Run] Solve completed:', solveResponse.data);
+      
+      // 4. Parse outputs from response
+      const geometryItems = [];
+      const dataItems = [];
+      
+      if (solveResponse.data?.values) {
+        console.log('[Run] Processing', solveResponse.data.values.length, 'output parameters');
+        
+        for (const output of solveResponse.data.values) {
+          const paramName = output.ParamName;
+          const innerTree = output.InnerTree || {};
+          
+          // Iterate through all paths in the tree
+          for (const [path, items] of Object.entries(innerTree)) {
+            for (const item of items) {
+              const itemType = item.type;
+              
+              // Check if it's a geometry type
+              if (itemType && itemType.startsWith('Rhino.Geometry.')) {
+                console.log(`[Run] Found geometry: ${paramName} (${itemType})`);
+                geometryItems.push({
+                  paramName,
+                  path,
+                  type: itemType,
+                  data: item.data
+                });
+              } else {
+                // It's a data type (string, number, etc.)
+                let value = item.data;
+                
+                // Parse if it's a JSON string
+                if (typeof value === 'string' && (value.startsWith('"') || value.startsWith('{') || value.startsWith('['))) {
+                  try {
+                    value = JSON.parse(value);
+                  } catch {}
+                }
+                
+                console.log(`[Run] Found data: ${paramName} = ${value} (${itemType})`);
+                dataItems.push({
+                  paramName,
+                  path,
+                  type: itemType,
+                  value
+                });
+              }
+            }
+          }
+        }
+      }
+      
+      // 5. Convert geometry to ThreeViewer format
+      if (geometryItems.length > 0) {
+        console.log('[Run] Converting', geometryItems.length, 'geometry items...');
+        const geometries = await convertRhinoComputeToThreeViewer(solveResponse.data);
+        
+        if (geometries && geometries.length > 0) {
+          console.log('[Run] Converted', geometries.length, 'geometries for visualization');
+          setSampleGeometry(geometries);
+          setIsViewerCollapsed(false);
+        }
+      } else {
+        console.log('[Run] No geometry outputs found');
+        setSampleGeometry(null);
+      }
+      
+      // 6. Store data outputs for table display
+      setOutputData(dataItems);
+      setSolveResult(null);
+      
+    } catch (err) {
+      console.error('[Run] Failed to run workflow:', err);
+      if (err.response) {
+        console.error('[Run] Error response:', err.response.status, err.response.data);
+      }
+      alert(`Failed to run: ${err.message}`);
+      setOutputData([]);
+    }
+  };
+
+  const loadFallback3dm = async () => {
+    try {
+      // For now, just show a demo geometry instead of trying to load .3dm
+      // TODO: Implement proper 3dm file loading when rhino3dm WASM issues are resolved
+      const demoGeometry = {
+        type: 'twisted-box',
+        width: 10,
+        height: 10,
+        depth: 50,
+        twist: Math.PI / 2,
+        segments: 20,
+        position: [0, 0, 0],
+        color: [0.3, 0.7, 1.0, 1.0]
+      };
+      
+      setSampleGeometry(demoGeometry);
+      setSolveResult(null); // Clear solve result to use ThreeViewer
+      setIsViewerCollapsed(false); // Open the viewer to show the result
+      console.log('Loaded demo geometry for demonstration');
+    } catch (err) {
+      console.error('Failed to load demo geometry:', err);
+      alert('Failed to load 3D preview.');
+    }
   };
 
   // Generate sample geometry for demonstration
@@ -467,7 +745,11 @@ const NodeParserDemoContent = ({ roomId }) => {
                   3D Preview {sampleGeometry ? '(Sample Cube)' : '(No geometry)'}
                 </div>
                 <ErrorBoundary>
-                  <ThreeViewer geometry={sampleGeometry} />
+                  {solveResult ? (
+                    <ThreeViewerRhino solveResult={solveResult} />
+                  ) : (
+                    <ThreeViewer geometry={sampleGeometry} />
+                  )}
                 </ErrorBoundary>
               </div>
               {/* Close button for expanded viewer - now outside the panel */}
@@ -538,123 +820,75 @@ const NodeParserDemoContent = ({ roomId }) => {
         )}
         </LiveCursorsContainer>
 
-        {/* Floating action buttons */}
-        <Box
-        sx={{
+      {/* Output Data Table */}
+      {outputData.length > 0 && (
+        <div style={{
           position: 'absolute',
-          top: '20px',
-          right: isViewerCollapsed ? '20px' : '440px',
-          zIndex: 100,
-          display: 'flex',
-          gap: 1,
-        }}
-      >
-        <Button
-          variant="contained"
-          onClick={handleExportGraph}
-          title="Save graph as JSON file"
-          startIcon={<Save />}
-          sx={{
-            bgcolor: theme.palette.mode === 'dark' ? '#424242' : '#e0e0e0',
-            color: theme.palette.mode === 'dark' ? 'white' : 'black',
-            '&:hover': {
-              bgcolor: theme.palette.mode === 'dark' ? '#525252' : '#d0d0d0',
-            },
-            textTransform: 'none',
+          bottom: '70px',
+          left: '10px',
+          right: isViewerCollapsed ? '10px' : '410px',
+          maxHeight: '200px',
+          overflowY: 'auto',
+          backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#ffffff',
+          border: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'}`,
+          borderRadius: '4px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          zIndex: 100
+        }}>
+          <div style={{
+            padding: '8px 12px',
+            background: theme.palette.mode === 'dark' ? '#333' : '#f5f5f5',
+            borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'}`,
+            fontSize: '12px',
             fontWeight: 'bold',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-          }}
-        >
-          Save
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleLoadFile}
-          title="Load JSON file"
-          startIcon={<FolderOpen />}
-          sx={{
-            bgcolor: theme.palette.mode === 'dark' ? '#424242' : '#e0e0e0',
-            color: theme.palette.mode === 'dark' ? 'white' : 'black',
-            '&:hover': {
-              bgcolor: theme.palette.mode === 'dark' ? '#525252' : '#d0d0d0',
-            },
-            textTransform: 'none',
-            fontWeight: 'bold',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-          }}
-        >
-          Load
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleClear}
-          title="Clear canvas"
-          startIcon={<Delete />}
-          sx={{
-            bgcolor: theme.palette.mode === 'dark' ? '#424242' : '#e0e0e0',
-            color: theme.palette.mode === 'dark' ? 'white' : 'black',
-            '&:hover': {
-              bgcolor: theme.palette.mode === 'dark' ? '#525252' : '#d0d0d0',
-            },
-            textTransform: 'none',
-            fontWeight: 'bold',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-          }}
-        >
-          Clear
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleRun}
-          title="Export and run (coming soon)"
-          startIcon={<PlayArrow />}
-          sx={{
-            bgcolor: theme.palette.mode === 'dark' ? '#424242' : '#e0e0e0',
-            color: theme.palette.mode === 'dark' ? 'white' : 'black',
-            '&:hover': {
-              bgcolor: theme.palette.mode === 'dark' ? '#525252' : '#d0d0d0',
-            },
-            textTransform: 'none',
-            fontWeight: 'bold',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-          }}
-        >
-          Run
-        </Button>
-        </Box>
+            color: theme.palette.mode === 'dark' ? '#ccc' : '#666'
+          }}>
+            Output Data ({outputData.length} items)
+          </div>
+          <table style={{
+            width: '100%',
+            fontSize: '12px',
+            borderCollapse: 'collapse',
+            color: theme.palette.mode === 'dark' ? '#ddd' : '#333'
+          }}>
+            <thead>
+              <tr style={{ backgroundColor: theme.palette.mode === 'dark' ? '#383838' : '#f9f9f9' }}>
+                <th style={{ padding: '6px 12px', textAlign: 'left', borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'}` }}>Parameter</th>
+                <th style={{ padding: '6px 12px', textAlign: 'left', borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'}` }}>Path</th>
+                <th style={{ padding: '6px 12px', textAlign: 'left', borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'}` }}>Type</th>
+                <th style={{ padding: '6px 12px', textAlign: 'left', borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ddd'}` }}>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {outputData.map((item, idx) => (
+                <tr key={idx} style={{ borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#333' : '#eee'}` }}>
+                  <td style={{ padding: '6px 12px' }}>{item.paramName}</td>
+                  <td style={{ padding: '6px 12px', fontFamily: 'monospace', fontSize: '11px', color: theme.palette.mode === 'dark' ? '#888' : '#999' }}>{item.path}</td>
+                  <td style={{ padding: '6px 12px', fontSize: '11px', color: theme.palette.mode === 'dark' ? '#888' : '#999' }}>{item.type}</td>
+                  <td style={{ padding: '6px 12px', fontFamily: 'monospace', fontSize: '11px', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {typeof item.value === 'object' ? JSON.stringify(item.value) : String(item.value)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-        {/* Comments button */}
-        {isCollabMode && (
-          <Box
-          sx={{
-            position: 'absolute',
-            right: '20px',
-            top: '70px',
-            zIndex: 101,
-          }}
-        >
-          <IconButton
-            onClick={() => setCommentsOpen(true)}
-            sx={{
-              bgcolor: 'primary.main',
-              color: 'primary.contrastText',
-              boxShadow: 2,
-              '&:hover': {
-                bgcolor: 'primary.dark',
-              },
-            }}
-            title="Open comments"
-          >
-            <Comment />
-          </IconButton>
-          </Box>
-        )}
-
-        {/* Comments Panel */}
-        <CommentsPanel
-          open={commentsOpen}
-          onClose={() => setCommentsOpen(false)}
-        />
+      {/* Floating action buttons */}
+      <div className="demo-floating-controls">
+        <button onClick={handleExportGraph} className="btn btn-save" title="Save graph as JSON file">
+          💾 Save
+        </button>
+        <button onClick={handleLoadFile} className="btn btn-load" title="Load JSON file">
+          📁 Load File
+        </button>
+        <button onClick={handleClear} className="btn btn-clear" title="Clear canvas">
+          🗑️ Clear
+        </button>
+        <button onClick={handleRun} className="btn btn-run" title="Convert to .gh and run with Rhino Compute">
+          ▶ Run
+        </button>
       </div>
     </div>
   );

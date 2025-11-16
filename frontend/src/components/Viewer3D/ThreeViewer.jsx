@@ -5,6 +5,88 @@ import { Box, Typography, useTheme } from '@mui/material';
 import * as THREE from 'three';
 
 /**
+ * DemoGeometry - Component that renders demo geometry types
+ */
+function DemoGeometry({ geometry }) {
+  const meshRef = useRef();
+  
+  const twistedBoxGeometry = useMemo(() => {
+    if (geometry.type !== 'twisted-box') return null;
+    
+    const { width = 10, height = 10, depth = 50, twist = Math.PI / 2, segments = 20 } = geometry;
+    
+    // Create a twisted box by creating a segmented box and rotating each segment
+    const geo = new THREE.BufferGeometry();
+    const vertices = [];
+    const indices = [];
+    
+    for (let i = 0; i <= segments; i++) {
+      const z = (i / segments - 0.5) * depth;
+      const rotation = (i / segments) * twist;
+      const cos = Math.cos(rotation);
+      const sin = Math.sin(rotation);
+      
+      // Four corners of this segment
+      const corners = [
+        [-width/2, -height/2],
+        [width/2, -height/2],
+        [width/2, height/2],
+        [-width/2, height/2]
+      ];
+      
+      corners.forEach(([x, y]) => {
+        // Apply rotation around Z axis
+        const rx = x * cos - y * sin;
+        const ry = x * sin + y * cos;
+        vertices.push(rx, ry, z);
+      });
+      
+      // Create faces between this segment and the previous one
+      if (i > 0) {
+        const base = (i - 1) * 4;
+        const top = i * 4;
+        
+        // Four faces per segment
+        for (let j = 0; j < 4; j++) {
+          const next = (j + 1) % 4;
+          // Triangle 1
+          indices.push(base + j, base + next, top + j);
+          // Triangle 2
+          indices.push(base + next, top + next, top + j);
+        }
+      }
+    }
+    
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geo.setIndex(indices);
+    geo.computeVertexNormals();
+    
+    return geo;
+  }, [geometry]);
+  
+  if (geometry.type === 'twisted-box' && twistedBoxGeometry) {
+    return (
+      <mesh ref={meshRef} geometry={twistedBoxGeometry}>
+        <meshStandardMaterial 
+          color={geometry.color ? new THREE.Color(...geometry.color.slice(0, 3)) : '#4CAF50'} 
+          side={THREE.DoubleSide} 
+        />
+      </mesh>
+    );
+  }
+  
+  // Fallback for other demo types
+  return (
+    <mesh position={geometry.position || [0, 0, 0]}>
+      <boxGeometry args={[geometry.width || 2, geometry.height || 2, geometry.depth || 2]} />
+      <meshStandardMaterial 
+        color={geometry.color ? new THREE.Color(...geometry.color.slice(0, 3)) : '#2196F3'} 
+      />
+    </mesh>
+  );
+}
+
+/**
  * MeshGeometry - Component that renders a single mesh from vertices and faces
  */
 function MeshGeometry({ vertices, faces }) {
@@ -74,12 +156,59 @@ function MeshGeometry({ vertices, faces }) {
 }
 
 /**
+ * ThreeObject - Component that renders a Three.js Object3D from Rhino3dmLoader
+ */
+function ThreeObject({ object }) {
+  if (!object) return null;
+  
+  // The object is already a Three.js Object3D with meshes
+  // We can use primitive to add it directly to the scene
+  return <primitive object={object} />;
+}
+
+/**
  * SceneContent - Renders all geometry meshes
  */
 function SceneContent({ geometry, theme }) {
   if (!geometry) {
     console.log('SceneContent: No geometry provided');
     return null;
+  }
+
+  // Check if this is a Three.js object from Rhino3dmLoader
+  if (geometry.type === 'three-object' && geometry.object) {
+    console.log('SceneContent: Rendering Three.js object from Rhino');
+    return (
+      <>
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[10, 10, 5]} intensity={1} />
+        <pointLight position={[-10, -10, -5]} intensity={0.5} />
+        <ThreeObject object={geometry.object} />
+        <Grid 
+          args={[10, 10]} 
+          cellColor={theme?.palette?.mode === 'dark' ? '#6f6f6f' : '#cccccc'} 
+          sectionColor={theme?.palette?.mode === 'dark' ? '#9d9d9d' : '#999999'} 
+        />
+      </>
+    );
+  }
+
+  // Check if this is demo geometry
+  if (geometry.type) {
+    console.log('SceneContent: Rendering demo geometry', geometry.type);
+    return (
+      <>
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[10, 10, 5]} intensity={1} />
+        <pointLight position={[-10, -10, -5]} intensity={0.5} />
+        <DemoGeometry geometry={geometry} />
+        <Grid 
+          args={[10, 10]} 
+          cellColor={theme?.palette?.mode === 'dark' ? '#6f6f6f' : '#cccccc'} 
+          sectionColor={theme?.palette?.mode === 'dark' ? '#9d9d9d' : '#999999'} 
+        />
+      </>
+    );
   }
 
   const meshes = Array.isArray(geometry) ? geometry : [geometry];
@@ -192,13 +321,13 @@ function ThreeViewer({ geometry }) {
             dpr={[1, 2]}
             frameloop="always"
           >
-            <PerspectiveCamera makeDefault position={[5, 5, 5]} fov={50} />
+            <PerspectiveCamera makeDefault position={[30, 30, 30]} fov={50} up={[0, 0, 1]} />
             <OrbitControls
               enablePan={true}
               enableZoom={true}
               enableRotate={true}
               minDistance={1}
-              maxDistance={20}
+              maxDistance={200}
             />
             <Suspense fallback={null}>
               <SceneContent geometry={geometry} theme={theme} />
