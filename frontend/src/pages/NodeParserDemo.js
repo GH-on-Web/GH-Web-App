@@ -193,15 +193,31 @@ const NodeParserDemoContent = ({ roomId }) => {
           node => !deletedNodeIds.includes(`node-${node.id}`)
         ) || [];
         
-        updateGraphNodes(updatedNodes);
+        // Also filter out links connected to deleted nodes
+        const updatedLinks = (currentData.links || []).filter(link => {
+          const sourceNodeId = `node-${link.fromNode}`;
+          const targetNodeId = `node-${link.toNode}`;
+          return !deletedNodeIds.includes(sourceNodeId) && !deletedNodeIds.includes(targetNodeId);
+        });
+        
+        // Update both nodes and links
+        updateGraphData({
+          nodes: updatedNodes,
+          links: updatedLinks
+        });
       } else {
         const updatedInstances = currentData.componentInstances?.filter(
           inst => !deletedNodeIds.includes(`node-${inst.instanceId}`)
         ) || [];
         
+        // Filter out connections to deleted nodes
+        const updatedConnections = (currentData.connections || []).filter(conn => {
+          return !deletedNodeIds.includes(conn.sourceNodeId) && !deletedNodeIds.includes(conn.targetNodeId);
+        });
+        
         updateGraphData({
           componentInstances: updatedInstances,
-          connections: currentData.links || currentData.connections || []
+          connections: updatedConnections
         });
       }
       return;
