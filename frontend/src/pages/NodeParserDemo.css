@@ -5,6 +5,10 @@
   position: relative;
 }
 
+.node-parser-demo.with-3d-viewer {
+  flex-direction: column;
+}
+
 .node-parser-demo[data-theme="dark"] {
   background: #1a1a1a;
 }
@@ -17,6 +21,11 @@
   z-index: 100;
   display: flex;
   gap: 8px;
+}
+
+/* When 3D viewer is open, adjust controls position to stay within graph canvas */
+.node-parser-demo.with-3d-viewer .demo-floating-controls {
+  right: 420px; /* 400px viewer width + 20px margin */
 }
 
 .demo-floating-controls .btn {
@@ -100,6 +109,39 @@
 
 .node-parser-demo[data-theme="dark"] .demo-canvas {
   background: #1a1a1a;
+}
+
+/* Canvas container for split view */
+.canvas-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.canvas-container.with-3d-viewer {
+  flex-direction: row;
+}
+
+.graph-canvas {
+  flex: 1;
+  position: relative;
+}
+
+.viewer-panel {
+  width: 400px;
+  height: 100%;
+  flex: 0 0 400px;
+  border-left: 1px solid #ddd;
+  background: #f9f9f9;
+  position: relative;
+  overflow-x: visible;
+  overflow-y: hidden;
+  min-height: 0;
+}
+
+[data-theme="dark"] .viewer-panel {
+  border-left-color: #333;
+  background: #2a2a2a;
 }
 
 .loading-message {

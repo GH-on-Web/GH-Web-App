@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTheme } from '@mui/material';
+import { IconButton, Box } from '@mui/material';
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { RoomProvider } from '@liveblocks/react';
 import { NodeParser } from '../components/NodeParser';
 import { useGraphCollaboration } from '../hooks/useCollaboration';
 import CollaborationStatus from '../components/Collaboration/CollaborationStatus';
+import ThreeViewer from '../components/Viewer3D/ThreeViewer';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { POSITION_SCALE_FACTOR } from '../utils/nodeParser';
 import exampleData from '../data/exampleGraph.json';
 import exampleDataInteractive from '../data/exampleGraphInteractive.json';
@@ -19,6 +23,12 @@ const NodeParserDemoContent = ({ roomId }) => {
   
   // Collaboration mode toggle
   const [isCollabMode, setIsCollabMode] = useState(false);
+  
+  // 3D viewer collapse state (following AppLayout pattern)
+  const [isViewerCollapsed, setIsViewerCollapsed] = useState(true);
+  
+  // Sample geometry for demonstration
+  const [sampleGeometry, setSampleGeometry] = useState(null);
   
   // Use Liveblocks for collaborative state
   const {
@@ -346,11 +356,29 @@ const NodeParserDemoContent = ({ roomId }) => {
 
   const handleRun = () => {
     // Export current canvas graph (will be replaced with backend call later)
-    handleExportGraph();
+    //handleExportGraph();
+    
+    // Generate sample geometry for 3D viewer
+    generateSampleGeometry();
+  };
+
+  // Generate sample geometry for demonstration
+  const generateSampleGeometry = () => {
+    // Create a simple box geometry using Three.js format
+    const geometry = {
+      type: 'box',
+      width: 2,
+      height: 2,
+      depth: 2,
+      position: [0, 0, 0],
+      color: [0.2, 0.6, 1.0, 1.0] // Blue color
+    };
+    
+    setSampleGeometry(geometry);
   };
 
   return (
-    <div className="node-parser-demo" data-theme={theme.palette.mode}>
+    <div className={`node-parser-demo ${!isViewerCollapsed ? 'with-3d-viewer' : ''}`} data-theme={theme.palette.mode}>
       {/* Collaboration toggle button */}
       <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 102 }}>
         <button 
@@ -379,6 +407,113 @@ const NodeParserDemoContent = ({ roomId }) => {
         </div>
       )}
       
+      <div className="demo-canvas">
+        {isLoadingDatabase ? (
+          <div className="loading-message">
+            Loading components database...
+          </div>
+        ) : componentsDatabase.length === 0 ? (
+          <div className="loading-message" style={{background: '#fff3cd', color: '#856404'}}>
+            ⚠️ Components database not loaded. Some features may not work correctly.
+          </div>
+        ) : null}
+        
+        <div className={`canvas-container ${!isViewerCollapsed ? 'with-3d-viewer' : ''}`}>
+          <div className="graph-canvas">
+            <NodeParser 
+              graphData={currentData} 
+              onConnectionsChange={handleConnectionsChange}
+              onNodesChange={handleNodesChange}
+              componentsDatabase={componentsDatabase}
+            />
+          </div>
+          
+          {/* 3D Viewer Panel */}
+          {!isViewerCollapsed && (
+            <>
+              <div className="viewer-panel">
+                <div style={{ 
+                  padding: '8px', 
+                  background: theme.palette.mode === 'dark' ? '#333' : '#f0f0f0',
+                  borderBottom: '1px solid #ddd',
+                  fontSize: '12px',
+                  color: theme.palette.mode === 'dark' ? '#ccc' : '#666'
+                }}>
+                  3D Preview {sampleGeometry ? '(Sample Cube)' : '(No geometry)'}
+                </div>
+                <ErrorBoundary>
+                  <ThreeViewer geometry={sampleGeometry} />
+                </ErrorBoundary>
+              </div>
+              {/* Close button for expanded viewer - now outside the panel */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: 'calc(100% - 400px - 30px)',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 103,
+                  pointerEvents: 'auto',
+                }}
+              >
+                <IconButton
+                  size="small"
+                  onClick={() => setIsViewerCollapsed(true)}
+                  sx={{
+                    bgcolor: 'primary.main',
+                    color: 'primary.contrastText',
+                    border: 1,
+                    borderColor: 'divider',
+                    boxShadow: 2,
+                    '&:hover': {
+                      bgcolor: 'primary.dark',
+                    },
+                    width: '40px',
+                    height: '40px',
+                  }}
+                  title="Hide 3D viewer"
+                >
+                  <ChevronRight fontSize="medium" />
+                </IconButton>
+              </Box>
+            </>
+          )}
+        </div>
+        
+        {/* 3D Viewer Toggle Button - only show when collapsed */}
+        {isViewerCollapsed && (
+          <Box
+            sx={{
+              position: 'absolute',
+              right: '10px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 103,
+            }}
+          >
+            <IconButton
+              size="small"
+              onClick={() => setIsViewerCollapsed(false)}
+              sx={{
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
+                border: 1,
+                borderColor: 'divider',
+                boxShadow: 2,
+                '&:hover': {
+                  bgcolor: 'primary.dark',
+                },
+                width: '40px',
+                height: '40px',
+              }}
+              title="Show 3D viewer"
+            >
+              <ChevronLeft fontSize="medium" />
+            </IconButton>
+          </Box>
+        )}
+      </div>
+
       {/* Floating action buttons */}
       <div className="demo-floating-controls">
         <button onClick={handleExportGraph} className="btn btn-save" title="Save graph as JSON file">
@@ -393,24 +528,6 @@ const NodeParserDemoContent = ({ roomId }) => {
         <button onClick={handleRun} className="btn btn-run" title="Export and run (coming soon)">
           ▶ Run
         </button>
-      </div>
-
-      <div className="demo-canvas">
-        {isLoadingDatabase ? (
-          <div className="loading-message">
-            Loading components database...
-          </div>
-        ) : componentsDatabase.length === 0 ? (
-          <div className="loading-message" style={{background: '#fff3cd', color: '#856404'}}>
-            ⚠️ Components database not loaded. Some features may not work correctly.
-          </div>
-        ) : null}
-        <NodeParser 
-          graphData={currentData} 
-          onConnectionsChange={handleConnectionsChange}
-          onNodesChange={handleNodesChange}
-          componentsDatabase={componentsDatabase}
-        />
       </div>
     </div>
   );
