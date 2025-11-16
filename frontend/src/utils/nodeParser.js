@@ -33,10 +33,10 @@ export const parseGrasshopperComponent = (ghComponent, instanceId, position = nu
   const inputHandles = ghComponent.Inputs 
     ? ghComponent.Inputs.map((input, idx) => ({
         id: `input-${idx}`,
-        name: input.Name,
-        nickname: input.Nickname,
-        description: input.Description,
-        typeName: input.TypeName,
+        name: input.Name || 'Input',
+        nickname: input.Nickname || input.Name || 'Input',
+        description: input.Description || '',
+        typeName: input.TypeName || 'Generic',
         type: 'target'
       }))
     : [];
@@ -45,10 +45,10 @@ export const parseGrasshopperComponent = (ghComponent, instanceId, position = nu
   const outputHandles = ghComponent.Outputs
     ? ghComponent.Outputs.map((output, idx) => ({
         id: `output-${idx}`,
-        name: output.Name,
-        nickname: output.Nickname,
-        description: output.Description,
-        typeName: output.TypeName,
+        name: output.Name || 'Output',
+        nickname: output.Nickname || output.Name || 'Output',
+        description: output.Description || '',
+        typeName: output.TypeName || 'Generic',
         type: 'source'
       }))
     : [];

@@ -199,9 +199,14 @@ const NodeParserDemo = () => {
         const reactFlowNode = newNodes?.find(n => n.id === `node-${newComponentInstance.instanceId}`);
         
         if (reactFlowNode) {
+          // Get GUID from component data or from the node data
+          const guid = newComponentInstance.component?.guid || 
+                       newComponentInstance.component?.Guid || 
+                       reactFlowNode.data.guid;
+          
           const newSimplifiedNode = {
             id: newComponentInstance.instanceId,
-            guid: reactFlowNode.data.guid,
+            guid: guid,
             nickname: reactFlowNode.data.nickname || reactFlowNode.data.name,
             x: newComponentInstance.position.x / POSITION_SCALE_FACTOR,
             y: newComponentInstance.position.y / POSITION_SCALE_FACTOR,
@@ -333,6 +338,9 @@ const NodeParserDemo = () => {
       <div className="demo-floating-controls">
         <button onClick={handleLoadFile} className="btn btn-load" title="Load JSON file">
           📁 Load File
+        </button>
+        <button onClick={handleClear} className="btn btn-clear" title="Clear canvas">
+          🗑️ Clear
         </button>
         <button onClick={handleRun} className="btn btn-run" title="Export and run (coming soon)">
           ▶ Run

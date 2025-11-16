@@ -65,6 +65,8 @@ const createInteractiveNode = (component, instanceId, position) => {
   const guid = component.Guid;
   const nodeType = INTERACTIVE_NODE_MAPPING[guid];
   
+  console.log('createInteractiveNode - GUID:', guid, 'Mapped Type:', nodeType);
+  
   switch (nodeType) {
     case 'numberSlider':
       return {
@@ -215,7 +217,14 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
         const hasDatabase = componentsDatabase && componentsDatabase.length > 0;
         
         if (!isInitialized.current || nodesChanged || (hasDatabase && parsedNodes.length > 0)) {
-          setNodes(parsedNodes);
+          // Preserve selection state when updating nodes
+          setNodes((currentNodes) => {
+            const selectedNodeIds = currentNodes.filter(n => n.selected).map(n => n.id);
+            return parsedNodes.map(node => ({
+              ...node,
+              selected: selectedNodeIds.includes(node.id)
+            }));
+          });
           
           // Only mark as initialized if we have the database loaded (for simplified format)
           // or if we're using the old format
@@ -377,6 +386,8 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
   // Handle component selection from search
   const handleComponentSelect = useCallback(
     (component) => {
+      console.log('Component selected:', component);
+      
       const instanceId = nextInstanceId.current++;
       
       // Calculate center position of the viewport
@@ -397,6 +408,7 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
           instanceId: instanceId.toString(),
           position: position,
           component: {
+            guid: component.Guid,  // Preserve GUID for saving
             type: interactiveNode.type,
             ...interactiveNode.data
           }
@@ -405,6 +417,7 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
       } else {
         // Use standard Grasshopper node
         newNode = parseGrasshopperComponent(component, instanceId, position);
+        console.log('Created standard node:', newNode);
         componentData = {
           instanceId: instanceId.toString(),
           position: position,

@@ -16,18 +16,19 @@
   right: 20px;
   z-index: 100;
   display: flex;
-  gap: 12px;
+  gap: 8px;
 }
 
 .demo-floating-controls .btn {
-  padding: 12px 24px;
+  padding: 8px 16px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   transition: all 0.2s;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-width: 90px;
 }
 
 .demo-floating-controls .btn:hover {
@@ -42,6 +43,15 @@
 
 .btn-load:hover {
   background: #0b7dda;
+}
+
+.btn-clear {
+  background: #757575;
+  color: white;
+}
+
+.btn-clear:hover {
+  background: #616161;
 }
 
 .btn-run {

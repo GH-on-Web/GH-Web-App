@@ -63,7 +63,7 @@ function App() {
                   Workspace 3DM
                 </Button>
                 <Button color="inherit" component={Link} to="/node-parser" size="small">
-                  Node Parser
+                  Graph Editor
                 </Button>
                 <Button color="inherit" component={Link} to="/interactive" size="small">
                   Interactive
@@ -81,7 +81,7 @@ function App() {
                 <Route path="/workspace/:workspaceId" element={<WorkspacePage />} />
                 <Route path="/workspace3dm" element={<Workspace3DMPage />} />
                 <Route path="/workspace3dm/:workspaceId" element={<Workspace3DMPage />} />
-                <Route path="/editor" element={<NodeParserDemo />} />
+                <Route path="/node-parser" element={<NodeParserDemo />} />
                 {/* <Route path="/interactive" element={<InteractiveNodesDemo />} /> */}
                 <Route path="/docs" element={<DocumentationPage />} />
               </Routes>
