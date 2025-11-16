@@ -487,11 +487,22 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
         multiSelectionKeyCode="Shift"
         attributionPosition="bottom-left"
       >
-        <Controls />
+        <Controls 
+          showZoom={false}
+          showInteractive={false}
+          style={{
+            bottom: 20,
+            left: 20,
+          }}
+        />
         <MiniMap 
           nodeColor={(node) => '#1a192b'}
           maskColor="rgba(0, 0, 0, 0.1)"
           className="react-flow__minimap"
+          style={{
+            bottom: 20,
+            right: 20,
+          }}
         />
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
       </ReactFlow>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Box } from '@mui/material';
 import { ReactFlow, Background, Controls, MiniMap } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import './FlowCanvas.css';
 
 /**
  * FlowCanvas - Main React Flow canvas component
@@ -44,7 +45,10 @@ function FlowCanvas({
   };
 
   return (
-    <Box sx={{ width: '100%', height: '100%', position: 'relative' }}>
+    <Box 
+      sx={{ width: '100%', height: '100%', position: 'relative' }}
+      data-theme={colorMode}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -67,16 +71,18 @@ function FlowCanvas({
         <MiniMap 
           position="bottom-right"
           style={{
-            bottom: 10,
-            right: 10,
+            bottom: 20,
+            right: 20,
             zIndex: 4,
           }}
         />
         <Controls 
           position="bottom-left"
+          showZoom={false}
+          showInteractive={false}
           style={{
-            bottom: 10,
-            left: 10,
+            bottom: 20,
+            left: 20,
             zIndex: 4,
           }}
         />
