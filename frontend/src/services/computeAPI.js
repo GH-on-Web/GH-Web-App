@@ -30,7 +30,22 @@ export async function computeGraph(graphDefinition, settings = {}) {
     };
     
     console.log('Sending POST request to:', url);
-    console.log('Payload:', payload);
+    console.log('Payload:', JSON.stringify(payload, null, 2));
+    
+    // Log circle node inputs specifically
+    const circleNodes = graphDefinition.nodes?.filter(n => n.type === 'circle');
+    if (circleNodes && circleNodes.length > 0) {
+      console.log('Circle nodes in payload:');
+      circleNodes.forEach(node => {
+        console.log(`  Node ${node.id}:`, {
+          inputs: node.data?.inputs,
+          hasCenter: !!node.data?.inputs?.center,
+          centerValue: node.data?.inputs?.center,
+          hasX: !!node.data?.inputs?.x,
+          xValue: node.data?.inputs?.x,
+        });
+      });
+    }
     
     // Add request interceptor to log the actual request
     const requestInterceptor = axios.interceptors.request.use(

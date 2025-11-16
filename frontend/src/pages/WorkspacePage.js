@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, useMediaQuery } from '@mui/material';
-import { ReactFlow, Background, Controls, MiniMap, Panel } from 'reactflow';
-import 'reactflow/dist/style.css';
+import { ReactFlow, Background, Controls, MiniMap, Panel } from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import useWorkspaceStore from '../store/workspaceStore';
 import useThemeStore from '../store/themeStore';
 import useViewModeStore from '../store/viewModeStore';
@@ -71,6 +71,10 @@ function WorkspacePage() {
           nodesDraggable={viewMode === 'graph'}
           nodesConnectable={viewMode === 'graph'}
           elementsSelectable={viewMode === 'graph'}
+          defaultEdgeOptions={{
+            style: { strokeWidth: 3 },
+            type: 'default',
+          }}
         >
           <MiniMap />
           <Controls />
@@ -89,8 +93,8 @@ function WorkspacePage() {
         }}
       >
         <ViewModeToggle />
-      </Box>
-    </Box>
+          </Box>
+        </Box>
   );
 }
 

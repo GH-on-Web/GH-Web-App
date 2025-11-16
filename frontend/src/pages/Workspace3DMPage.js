@@ -1,10 +1,11 @@
-import React, { useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useRef, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Typography, Button, Toolbar } from '@mui/material';
+import { Box, Typography, Button, Toolbar, useMediaQuery } from '@mui/material';
 import { RoomProvider } from '@liveblocks/react';
-import { applyNodeChanges, applyEdgeChanges, addEdge } from 'reactflow';
+import { applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react';
 import { nanoid } from 'nanoid';
 import useWorkspaceStore from '../store/workspaceStore';
+import useThemeStore from '../store/themeStore';
 import AppLayout from '../components/Layout/AppLayout';
 import FlowCanvas from '../components/Canvas/FlowCanvas';
 import ComponentLibrary from '../components/Sidebar/ComponentLibrary';
@@ -32,6 +33,13 @@ function Workspace3DMContent({ roomId }) {
     deleteNodes,
   } = useWorkspaceStore();
 
+  // Get theme mode for React Flow colorMode
+  const { mode: themeMode } = useThemeStore();
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const colorMode = themeMode === 'system'
+    ? (prefersDarkMode ? 'dark' : 'light')
+    : themeMode;
+
   // Get collaboration data from Liveblocks
   // Note: Must be called within RoomProvider context
   const {
@@ -44,7 +52,42 @@ function Workspace3DMContent({ roomId }) {
   } = useCollaboration();
 
   // Use Liveblocks nodes/edges as source of truth
-  const nodes = liveblocksNodes;
+  // Ensure all nodes have the onChange handler attached (functions can't be serialized in Liveblocks)
+  // Use a ref to always access the latest nodes
+  const nodesRef = useRef(liveblocksNodes);
+  useEffect(() => {
+    nodesRef.current = liveblocksNodes;
+  }, [liveblocksNodes]);
+
+  const nodes = useMemo(() => {
+    return liveblocksNodes.map((node) => ({
+      ...node,
+      data: {
+        ...node.data,
+        // Attach onChange handler if it doesn't exist
+        // Use nodesRef to always get the latest nodes
+        onChange: node.data?.onChange || ((nodeId, inputKey, value) => {
+          const currentNodes = nodesRef.current;
+          const updatedNodes = currentNodes.map((n) =>
+            n.id === nodeId
+              ? {
+                  ...n,
+                  data: {
+                    ...n.data,
+                    inputs: {
+                      ...n.data.inputs,
+                      [inputKey]: value,
+                    },
+                  },
+                }
+              : n
+          );
+          updateNodes(updatedNodes);
+        }),
+      },
+    }));
+  }, [liveblocksNodes, updateNodes]);
+  
   const edges = liveblocksEdges;
 
   const { isComputing, geometry, compute } = useCompute(nodes, edges);
@@ -187,7 +230,7 @@ function Workspace3DMContent({ roomId }) {
               {isComputing ? 'Computing...' : 'Compute'}
             </Button>
           </Toolbar>
-          <Box sx={{ flexGrow: 1, position: 'relative' }}>
+          <Box sx={{ flexGrow: 1, position: 'relative', overflow: 'hidden', minHeight: 0 }}>
             <FlowCanvas
               nodes={nodes}
               edges={edges}
@@ -198,6 +241,7 @@ function Workspace3DMContent({ roomId }) {
               onNodeClick={handleNodeClick}
               onPaneClick={() => setSelectedNode(null)}
               onInit={onInit}
+              colorMode={colorMode}
             />
           </Box>
         </Box>
