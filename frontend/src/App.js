@@ -81,7 +81,7 @@ function App() {
                 <Route path="/workspace/:workspaceId" element={<WorkspacePage />} />
                 <Route path="/workspace3dm" element={<Workspace3DMPage />} />
                 <Route path="/workspace3dm/:workspaceId" element={<Workspace3DMPage />} />
-                <Route path="/node-parser" element={<NodeParserDemo />} />
+                <Route path="/editor" element={<NodeParserDemo />} />
                 {/* <Route path="/interactive" element={<InteractiveNodesDemo />} /> */}
                 <Route path="/docs" element={<DocumentationPage />} />
               </Routes>
