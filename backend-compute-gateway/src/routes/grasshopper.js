@@ -164,6 +164,7 @@ router.post('/solve', async (req, res, next) => {
     const solveResponse = await axios.post(solveUrl, solvePayload, {
       headers: buildHeaders({ 'Content-Type': 'application/json' }),
       validateStatus: () => true,
+      timeout: 60000, // 60 second timeout
     });
     
     console.log(`[grasshopper] Solve response status: ${solveResponse.status}`);

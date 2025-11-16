@@ -88,9 +88,20 @@ router.post('/', async (req, res, next) => {
     const solveResponse = await axios.post(solveUrl, solvePayload, {
       headers: buildHeaders({ 'Content-Type': 'application/json' }),
       validateStatus: () => true,
+      timeout: 60000, // 60 second timeout
     });
     
     console.log(`[json-to-gh] Response status: ${solveResponse.status}`);
+    
+    if (solveResponse.data && solveResponse.data.values) {
+      console.log(`[json-to-gh] Output values count: ${solveResponse.data.values.length}`);
+      solveResponse.data.values.forEach((val, idx) => {
+        const innerTreeKeys = Object.keys(val.InnerTree || {});
+        const firstKey = innerTreeKeys[0];
+        const itemCount = firstKey ? val.InnerTree[firstKey]?.length : 0;
+        console.log(`[json-to-gh] Output ${idx}: ${val.ParamName} - InnerTree keys: ${innerTreeKeys.join(', ')} - Items: ${itemCount}`);
+      });
+    }
     
     return res.status(solveResponse.status).json(solveResponse.data);
     

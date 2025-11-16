@@ -61,6 +61,7 @@ router.post('/', async (req, res, next) => {
     
     console.log(`[gh-to-json] Loaded compute-gh-to-json.gh (${ghBuffer.length} bytes)`);
     console.log(`[gh-to-json] Processing ${fileName}`);
+    console.log(`[gh-to-json] Input .gh file size: ${Buffer.from(ghFileBase64, 'base64').length} bytes`);
     
     // Build the solve request - same structure as grasshopper endpoint
     const solvePayload = {
@@ -74,7 +75,7 @@ router.post('/', async (req, res, next) => {
       cachesolve: true,
       values: [
         {
-          ParamName: "GH_File",
+          ParamName: "Get String",
           InnerTree: {
             "{0}": [
               {
@@ -89,6 +90,8 @@ router.post('/', async (req, res, next) => {
       errors: []
     };
     
+    console.log(`[gh-to-json] Sending parameter "GH_File" with base64 data (${ghFileBase64.length} chars)`);
+    
     // Send to /grasshopper endpoint (same as grasshopper/solve)
     const solveUrl = `${computeBaseUrl}/grasshopper`;
     console.log(`[gh-to-json] Solving at ${solveUrl}`);
@@ -96,9 +99,23 @@ router.post('/', async (req, res, next) => {
     const solveResponse = await axios.post(solveUrl, solvePayload, {
       headers: buildHeaders({ 'Content-Type': 'application/json' }),
       validateStatus: () => true,
+      timeout: 60000, // 60 second timeout
     });
     
     console.log(`[gh-to-json] Response status: ${solveResponse.status}`);
+    
+    if (solveResponse.data && solveResponse.data.values) {
+      console.log(`[gh-to-json] Output values count: ${solveResponse.data.values.length}`);
+      solveResponse.data.values.forEach((val, idx) => {
+        const innerTreeKeys = Object.keys(val.InnerTree || {});
+        const firstKey = innerTreeKeys[0];
+        const itemCount = firstKey ? val.InnerTree[firstKey]?.length : 0;
+        console.log(`[gh-to-json] Output ${idx}: ${val.ParamName} - InnerTree keys: ${innerTreeKeys.join(', ')} - Items: ${itemCount}`);
+        if (itemCount > 0) {
+          console.log(`[gh-to-json]   First item type: ${val.InnerTree[firstKey][0]?.type}`);
+        }
+      });
+    }
     
     return res.status(solveResponse.status).json(solveResponse.data);
     

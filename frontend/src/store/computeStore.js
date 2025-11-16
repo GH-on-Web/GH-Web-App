@@ -50,10 +50,6 @@ async function request(path, options = {}) {
 const useComputeStore = create((set, get) => ({
   baseUrl: DEFAULT_BASE_URL,
 
-  async fetchScriptsManifest() {
-    return request('/scripts');
-  },
-
   async parseGhToJson(payload) {
     return request('/gh-to-json', {
       method: 'POST',
@@ -66,28 +62,6 @@ const useComputeStore = create((set, get) => ({
     return request('/json-to-gh', {
       method: 'POST',
       body: JSON.stringify(payload),
-    });
-  },
-
-  async compute(path, payload) {
-    const normalized = path.startsWith('/') ? path : `/${path}`;
-    return request(`/compute${normalized}`, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-  },
-
-  async proxyGhFile(file, targetPath = '') {
-    if (!file) {
-      throw new Error('Drop a GH file before running the proxy test.');
-    }
-    const normalized = targetPath ? (targetPath.startsWith('/') ? targetPath : `/${targetPath}`) : '';
-    const form = new FormData();
-    form.append('file', file, file.name);
-    return request(`/compute${normalized}`, {
-      method: 'POST',
-      body: form,
-      skipContentType: true,
     });
   },
 

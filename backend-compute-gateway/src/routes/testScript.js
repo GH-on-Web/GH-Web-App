@@ -90,6 +90,7 @@ router.post('/', async (req, res, next) => {
     const solveResponse = await axios.post(solveUrl, solvePayload, {
       headers: buildHeaders({ 'Content-Type': 'application/json' }),
       validateStatus: () => true,
+      timeout: 60000, // 60 second timeout
     });
     
     console.log(`[test-script] Solve response status: ${solveResponse.status}`);

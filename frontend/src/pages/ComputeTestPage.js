@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, Button, Container, Grid, Paper, TextField, Typography } from '@mui/material';
 import useComputeStore from '../store/computeStore';
 function FileDrop({ label, accept = '.gh', file, onFileChange }) {
@@ -85,7 +85,6 @@ function ComputeTestPage() {
   const computeStore = useComputeStore();
 
   const [proxyFile, setProxyFile] = useState(null);
-  const [proxyPath, setProxyPath] = useState('');
   const [proxyResult, setProxyResult] = useState('');
   const [proxyLoading, setProxyLoading] = useState(false);
   const [proxyError, setProxyError] = useState('');
@@ -125,8 +124,40 @@ function ComputeTestPage() {
     setProxyError('');
 
     try {
-      const response = await computeStore.proxyGhFile(proxyFile, proxyPath);
-      setProxyResult(formatResponse(response));
+      // Read .gh file as binary and convert to base64
+      const arrayBuffer = await proxyFile.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      const binary = bytes.reduce((acc, byte) => acc + String.fromCharCode(byte), '');
+      const algo = btoa(binary);
+      
+      // Build grasshopper solve payload
+      const payload = {
+        algo: algo,
+        pointer: null,
+        fileName: proxyFile.name,
+        cachesolve: true,
+        values: [],
+        absolutetolerance: 0.01,
+        angletolerance: 1.0,
+        modelunits: "Meters",
+        dataversion: 7,
+        warnings: [],
+        errors: []
+      };
+      
+      // Use the grasshopper/solve endpoint instead of generic proxy
+      const response = await fetch(`${computeStore.baseUrl}/grasshopper/solve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+      
+      const result = await response.json();
+      setProxyResult(formatResponse(result));
     } catch (err) {
       setProxyError(err.message || 'Request failed');
     } finally {
@@ -140,8 +171,13 @@ function ComputeTestPage() {
     setGhError('');
 
     try {
-      const content = await ghFile.text();
-      const payload = { fileName: ghFile.name, ghScript: content };
+      // Read .gh file as binary and convert to base64
+      const arrayBuffer = await ghFile.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      const binary = bytes.reduce((acc, byte) => acc + String.fromCharCode(byte), '');
+      const ghFileBase64 = btoa(binary);
+      
+      const payload = { ghFileBase64, fileName: ghFile.name };
       const result = await computeStore.parseGhToJson(payload);
       setGhResult(JSON.stringify(result, null, 2));
     } catch (err) {
@@ -232,14 +268,6 @@ function ComputeTestPage() {
     }
   };
 
-  const proxiedInstructions = useMemo(
-    () =>
-      proxyPath
-        ? `Calling /compute${proxyPath.startsWith('/') ? proxyPath : `/${proxyPath}`}`
-        : 'Calling /compute',
-    [proxyPath]
-  );
-
   return (
     <Container sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom>
@@ -251,19 +279,13 @@ function ComputeTestPage() {
       <Grid container spacing={3}>
         <Grid item xs={12} md={4}>
           <Paper variant="outlined" sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Typography variant="h6">Proxy .gh file</Typography>
+            <Typography variant="h6">Run .gh File</Typography>
             <Typography variant="body2" color="text.secondary">
-              Drop a GH file and send it through the /compute proxy. {proxiedInstructions}
+              Drop a GH file and run it through /grasshopper/solve. The file will be converted to base64 and sent to Rhino Compute.
             </Typography>
-            <FileDrop label="Drop file for proxy" file={proxyFile} onFileChange={setProxyFile} />
-            <TextField
-              label="Optional target path"
-              value={proxyPath}
-              onChange={(event) => setProxyPath(event.target.value)}
-              size="small"
-            />
+            <FileDrop label="Drop .gh file to run" file={proxyFile} onFileChange={setProxyFile} />
             <Button variant="contained" onClick={handleProxyRun} disabled={!proxyFile || proxyLoading}>
-              {proxyLoading ? 'Running...' : 'Run Proxy'}
+              {proxyLoading ? 'Running...' : 'Run GH File'}
             </Button>
             {proxyError && (
               <Typography color="error" variant="body2">

@@ -18,6 +18,7 @@ router.get('/', async (req, res, next) => {
     const response = await axios.get(targetUrl, {
       headers: {},
       validateStatus: () => true,
+      timeout: 10000, // 10 second timeout for version check
     });
     console.log(`[backend-compute-gateway] version response ${response.status}`, response.data);
 
