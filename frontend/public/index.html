@@ -28,6 +28,41 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
+    <script>
+      // Suppress ResizeObserver errors before React loads
+      // This prevents React's error overlay from showing these harmless errors
+      (function() {
+        const resizeObserverLoopErrRe = /ResizeObserver/i;
+        const originalError = window.Error;
+        const originalConsoleError = console.error;
+        
+        // Override Error constructor
+        window.Error = function(...args) {
+          const error = new originalError(...args);
+          if (resizeObserverLoopErrRe.test(error.message)) {
+            error._suppressReactErrorOverlay = true;
+          }
+          return error;
+        };
+        
+        // Override console.error
+        console.error = function(...args) {
+          if (args[0] && typeof args[0] === 'string' && resizeObserverLoopErrRe.test(args[0])) {
+            return;
+          }
+          originalConsoleError.apply(console, args);
+        };
+        
+        // Catch window errors
+        window.addEventListener('error', function(e) {
+          if (e.message && resizeObserverLoopErrRe.test(e.message)) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return false;
+          }
+        }, true);
+      })();
+    </script>
     <div id="root"></div>
     <!--
       This HTML file is a template.
