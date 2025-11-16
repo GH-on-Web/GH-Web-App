@@ -1,0 +1,117 @@
+{
+  "nodes": [
+    {
+      "id": "pt_in",
+      "type": "Grasshopper.Kernel.Parameters.Param_Point, Grasshopper",
+      "nickname": "Center",
+      "x": 50.0,
+      "y": 100.0,
+      "properties": {}
+    },
+    {
+      "id": "r_slider",
+      "type": "Grasshopper.Kernel.Special.GH_NumberSlider, Grasshopper",
+      "nickname": "Radius",
+      "x": 50.0,
+      "y": 200.0,
+      "properties": {
+        "Min": 0.0,
+        "Max": 20.0,
+        "Value": 5.0
+      }
+    },
+    {
+      "id": "s_slider",
+      "type": "Grasshopper.Kernel.Special.GH_NumberSlider, Grasshopper",
+      "nickname": "BoxSize",
+      "x": 50.0,
+      "y": 300.0,
+      "properties": {
+        "Min": 0.0,
+        "Max": 40.0,
+        "Value": 15.0
+      }
+    },
+
+    {
+      "id": "sphere",
+      "type": "REPLACE_WITH_SPHERE_COMPONENT_TYPE",
+      "nickname": "Sphere",
+      "x": 300.0,
+      "y": 120.0,
+      "properties": {}
+    },
+    {
+      "id": "box",
+      "type": "REPLACE_WITH_BOX_COMPONENT_TYPE",
+      "nickname": "Box",
+      "x": 300.0,
+      "y": 260.0,
+      "properties": {}
+    },
+    {
+      "id": "solid_bool",
+      "type": "REPLACE_WITH_BOOLEAN_INTERSECTION_COMPONENT_TYPE",
+      "nickname": "SolidInt",
+      "x": 550.0,
+      "y": 190.0,
+      "properties": {}
+    },
+
+    {
+      "id": "bool_out",
+      "type": "Grasshopper.Kernel.Parameters.Param_Brep, Grasshopper",
+      "nickname": "Result",
+      "x": 800.0,
+      "y": 190.0,
+      "properties": {}
+    }
+  ],
+  "links": [
+    {
+      "fromNode": "pt_in",
+      "fromParam": "0",
+      "toNode": "sphere",
+      "toParam": "C"
+    },
+    {
+      "fromNode": "r_slider",
+      "fromParam": "0",
+      "toNode": "sphere",
+      "toParam": "R"
+    },
+
+    {
+      "fromNode": "pt_in",
+      "fromParam": "0",
+      "toNode": "box",
+      "toParam": "P"
+    },
+    {
+      "fromNode": "s_slider",
+      "fromParam": "0",
+      "toNode": "box",
+      "toParam": "S"
+    },
+
+    {
+      "fromNode": "sphere",
+      "fromParam": "S",
+      "toNode": "solid_bool",
+      "toParam": "A"
+    },
+    {
+      "fromNode": "box",
+      "fromParam": "B",
+      "toNode": "solid_bool",
+      "toParam": "B"
+    },
+
+    {
+      "fromNode": "solid_bool",
+      "fromParam": "R",
+      "toNode": "bool_out",
+      "toParam": "0"
+    }
+  ]
+}

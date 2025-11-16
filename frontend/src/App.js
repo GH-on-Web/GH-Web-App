@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import WorkspacePage from './pages/WorkspacePage';
 import Workspace3DMPage from './pages/Workspace3DMPage';
 import DocumentationPage from './pages/DocumentationPage';
+import ComputeTestPage from './pages/ComputeTestPage';
 import NodeParserDemo from './pages/NodeParserDemo';
 import InteractiveNodesDemo from './pages/InteractiveNodesDemo';
 import ThemeToggle from './components/ThemeToggle';
@@ -79,6 +80,10 @@ function App() {
                 <Button color="inherit" component={Link} to="/node-parser" size="small">
                   Graph Editor
                 </Button>
+                <Button color="inherit" component={Link} to="/compute-test">
+              Compute Test
+            </Button>
+                 
                 <Button color="inherit" component={Link} to="/docs" size="small">
                   Docs
                 </Button>
@@ -94,6 +99,7 @@ function App() {
                 <Route path="/workspace3dm/:workspaceId" element={<Workspace3DMPage />} />
                 <Route path="/node-parser" element={<NodeParserDemo />} />
                 <Route path="/node-parser/:workspaceId" element={<NodeParserDemo />} />
+                <Route path="/compute-test" element={<ComputeTestPage />} />
                 {/* <Route path="/interactive" element={<InteractiveNodesDemo />} /> */}
                 <Route path="/docs" element={<DocumentationPage />} />
               </Routes>
