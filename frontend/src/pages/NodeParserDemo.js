@@ -877,16 +877,68 @@ const NodeParserDemoContent = ({ roomId }) => {
 
       {/* Floating action buttons */}
       <div className="demo-floating-controls">
-        <button onClick={handleExportGraph} className="btn btn-save" title="Save graph as JSON file">
+        <button
+          onClick={handleExportGraph}
+          style={{
+            backgroundColor: theme.palette.mode === 'dark' ? '#424242' : '#e0e0e0',
+            color: theme.palette.mode === 'dark' ? 'white' : 'black',
+            padding: '8px 16px',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}
+          title="Save graph as JSON file"
+        >
           💾 Save
         </button>
-        <button onClick={handleLoadFile} className="btn btn-load" title="Load JSON file">
-          📁 Load File
+        <button
+          onClick={handleLoadFile}
+          style={{
+            backgroundColor: theme.palette.mode === 'dark' ? '#424242' : '#e0e0e0',
+            color: theme.palette.mode === 'dark' ? 'white' : 'black',
+            padding: '8px 16px',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}
+          title="Load JSON file"
+        >
+          📁 Load
         </button>
-        <button onClick={handleClear} className="btn btn-clear" title="Clear canvas">
+        <button
+          onClick={handleClear}
+          style={{
+            backgroundColor: theme.palette.mode === 'dark' ? '#424242' : '#e0e0e0',
+            color: theme.palette.mode === 'dark' ? 'white' : 'black',
+            padding: '8px 16px',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}
+          title="Clear canvas"
+        >
           🗑️ Clear
         </button>
-        <button onClick={handleRun} className="btn btn-run" title="Convert to .gh and run with Rhino Compute">
+        <button
+          onClick={handleRun}
+          style={{
+            backgroundColor: theme.palette.mode === 'dark' ? '#424242' : '#e0e0e0',
+            color: theme.palette.mode === 'dark' ? 'white' : 'black',
+            padding: '8px 16px',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}
+          title="Convert to .gh and run with Rhino Compute"
+        >
           ▶ Run
         </button>
       </div>
