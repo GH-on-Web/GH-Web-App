@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '@mui/material';
 import { NodeParser } from '../components/NodeParser';
 import { POSITION_SCALE_FACTOR } from '../utils/nodeParser';
 import exampleData from '../data/exampleGraph.json';
@@ -10,6 +11,7 @@ import './NodeParserDemo.css';
  * Demo page for the NodeParser component with real GH component structure
  */
 const NodeParserDemo = () => {
+  const theme = useTheme();
   const [jsonInput, setJsonInput] = useState(JSON.stringify(testScript1, null, 2));
   const [currentData, setCurrentData] = useState(testScript1);
   const [parseError, setParseError] = useState(null);
@@ -320,112 +322,21 @@ const NodeParserDemo = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleRun = () => {
+    // Export current canvas graph (will be replaced with backend call later)
+    handleExportGraph();
+  };
+
   return (
-    <div className="node-parser-demo">
-      <div className="demo-sidebar">
-        <h2>Grasshopper Node Parser</h2>
-        <p className="demo-description">
-          Load component instances from the GH database and visualize their connections.
-          <br/>
-          <strong>Create wire:</strong> Drag from output to input
-          <br/>
-          <strong>Delete wire:</strong> Ctrl+drag existing connection or select and press Delete
-        </p>
-
-        <div className="demo-controls">
-          <button onClick={handleLoadFile} className="btn btn-secondary">
-            📁 Load File
-          </button>
-          <button onClick={handleLoadExample} className="btn btn-example">
-            Load Test Script 1 (Simplified)
-          </button>
-          <button onClick={handleLoadInteractiveExample} className="btn btn-example">
-            Load Interactive Example (Old)
-          </button>
-          <button onClick={handleLoadVanillaExample} className="btn btn-example">
-            Load Standard Example (Old)
-          </button>
-          <button onClick={handleParseJson} className="btn btn-primary">
-            Parse & Render
-          </button>
-          <button onClick={handleClear} className="btn btn-tertiary">
-            Clear
-          </button>
-          <button onClick={handleExportGraph} className="btn btn-export">
-            💾 Export Graph
-          </button>
-          <button onClick={handleExportConnections} className="btn btn-export">
-            Export Connections
-          </button>
-        </div>
-
-        {parseError && (
-          <div className="error-message">
-            {parseError}
-          </div>
-        )}
-
-        <div className="connections-info">
-          <h3>Connections ({connections.length})</h3>
-          <div className="connections-list">
-            {connections.length === 0 ? (
-              <p className="no-connections">No connections yet. Draw wires by dragging from outputs to inputs.</p>
-            ) : (
-              connections.map((conn, idx) => (
-                <div key={idx} className="connection-item">
-                  <span className="connection-text">
-                    {conn.sourceNodeId}[{conn.sourceHandleIndex}] → {conn.targetNodeId}[{conn.targetHandleIndex}]
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="json-input-container">
-          <label htmlFor="json-input">Graph JSON:</label>
-          <textarea
-            id="json-input"
-            value={jsonInput}
-            onChange={(e) => setJsonInput(e.target.value)}
-            placeholder="Paste your graph JSON here..."
-            spellCheck="false"
-          />
-        </div>
-
-        <div className="demo-info">
-          <h3>Simplified Format (Test-Script-1.json):</h3>
-          <pre>{`{
-  "nodes": [
-    {
-      "id": "slider_x",
-      "guid": "57da07bd-ecab-415d-9d86-af36d7073abc",
-      "nickname": "X",
-      "x": 40,
-      "y": 40,
-      "properties": {
-        "Min": -10.0,
-        "Max": 10.0,
-        "Value": 2.0
-      }
-    }
-  ],
-  "links": [
-    {
-      "fromNode": "slider_x",
-      "fromParam": "0",
-      "toNode": "pt",
-      "toParam": "X"
-    }
-  ]
-}
-
-// Old Format (for backward compatibility):
-{
-  "componentInstances": [...],
-  "connections": [...]
-}`}</pre>
-        </div>
+    <div className="node-parser-demo" data-theme={theme.palette.mode}>
+      {/* Floating action buttons */}
+      <div className="demo-floating-controls">
+        <button onClick={handleLoadFile} className="btn btn-load" title="Load JSON file">
+          📁 Load File
+        </button>
+        <button onClick={handleRun} className="btn btn-run" title="Export and run (coming soon)">
+          ▶ Run
+        </button>
       </div>
 
       <div className="demo-canvas">

@@ -8,8 +8,18 @@
   position: relative;
 }
 
+[data-theme="dark"] .grasshopper-node {
+  background: #2d2d2d;
+  border-color: #666;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
 .grasshopper-node:hover {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .grasshopper-node:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
 }
 
 .node-content {
@@ -42,12 +52,21 @@
   border-bottom: 1px solid #e0e0e0;
 }
 
+[data-theme="dark"] .node-header {
+  color: #e0e0e0;
+  border-bottom-color: #404040;
+}
+
 .node-category {
   font-size: 10px;
   color: #999;
   text-align: center;
   padding: 4px 0;
   font-style: italic;
+}
+
+[data-theme="dark"] .node-category {
+  color: #808080;
 }
 
 .node-handles {
@@ -69,6 +88,11 @@
   background: #f5f5f5;
   border-radius: 3px;
   user-select: none;
+}
+
+[data-theme="dark"] .handle-label {
+  color: #b0b0b0;
+  background: #1f1f1f;
 }
 
 .input-label {

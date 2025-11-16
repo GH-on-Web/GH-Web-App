@@ -32,7 +32,7 @@ const PanelNode = ({ data, id }) => {
         <Handle
           type="target"
           position={Position.Left}
-          id="input"
+          id="input-0"
           className="node-handle"
           isConnectable={true}
         />
@@ -67,7 +67,7 @@ const PanelNode = ({ data, id }) => {
       <Handle
         type="source"
         position={Position.Right}
-        id="output"
+        id="output-0"
         className="node-handle"
         isConnectable={true}
       />

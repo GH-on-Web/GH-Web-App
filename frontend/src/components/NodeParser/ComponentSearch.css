@@ -1,6 +1,6 @@
 .component-search {
   position: fixed;
-  bottom: 20px;
+  bottom: 60px;
   left: 50%;
   transform: translateX(-50%);
   width: 600px;
@@ -18,10 +18,20 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+[data-theme="dark"] .search-input-container {
+  background: #2d2d2d;
+  border-color: #66BB6A;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
 .search-icon {
   padding: 0 12px;
   font-size: 18px;
   color: #666;
+}
+
+[data-theme="dark"] .search-icon {
+  color: #b0b0b0;
 }
 
 .search-input {
@@ -31,10 +41,19 @@
   outline: none;
   font-size: 14px;
   background: transparent;
+  color: #1a192b;
+}
+
+[data-theme="dark"] .search-input {
+  color: #e0e0e0;
 }
 
 .search-input::placeholder {
   color: #999;
+}
+
+[data-theme="dark"] .search-input::placeholder {
+  color: #666;
 }
 
 .search-clear {
@@ -47,8 +66,16 @@
   transition: color 0.2s;
 }
 
+[data-theme="dark"] .search-clear {
+  color: #808080;
+}
+
 .search-clear:hover {
   color: #666;
+}
+
+[data-theme="dark"] .search-clear:hover {
+  color: #b0b0b0;
 }
 
 .search-results {
@@ -65,6 +92,12 @@
   overflow-y: auto;
 }
 
+[data-theme="dark"] .search-results {
+  background: #2d2d2d;
+  border-color: #404040;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
 .search-result-item {
   padding: 12px 16px;
   cursor: pointer;
@@ -73,6 +106,10 @@
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+[data-theme="dark"] .search-result-item {
+  border-bottom-color: #404040;
 }
 
 .result-icon {
@@ -104,8 +141,17 @@
   background: #f5f5f5;
 }
 
+[data-theme="dark"] .search-result-item:hover,
+[data-theme="dark"] .search-result-item.selected {
+  background: #3d3d3d;
+}
+
 .search-result-item.selected {
   background: #e8f5e9;
+}
+
+[data-theme="dark"] .search-result-item.selected {
+  background: #2a4a2a;
 }
 
 .result-main {
@@ -121,9 +167,17 @@
   color: #1a192b;
 }
 
+[data-theme="dark"] .result-nickname {
+  color: #e0e0e0;
+}
+
 .result-name {
   font-size: 12px;
   color: #666;
+}
+
+[data-theme="dark"] .result-name {
+  color: #999;
 }
 
 .result-category {
@@ -131,6 +185,10 @@
   color: #999;
   margin-bottom: 4px;
   font-style: italic;
+}
+
+[data-theme="dark"] .result-category {
+  color: #808080;
 }
 
 .result-info {
@@ -147,11 +205,20 @@
   border-radius: 4px;
 }
 
+[data-theme="dark"] .result-io {
+  color: #b0b0b0;
+  background: #1f1f1f;
+}
+
 .search-no-results {
   padding: 16px;
   text-align: center;
   color: #999;
   font-size: 13px;
+}
+
+[data-theme="dark"] .search-no-results {
+  color: #808080;
 }
 
 /* Scrollbar styling */

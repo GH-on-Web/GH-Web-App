@@ -468,6 +468,8 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
         nodesConnectable={true}
         elementsSelectable={true}
         fitView
+        minZoom={0.05}
+        maxZoom={4}
         deleteKeyCode={["Backspace", "Delete"]}
         multiSelectionKeyCode="Shift"
         attributionPosition="bottom-left"
@@ -476,6 +478,7 @@ const NodeParser = ({ graphData, onConnectionsChange, onNodesChange: onNodesChan
         <MiniMap 
           nodeColor={(node) => '#1a192b'}
           maskColor="rgba(0, 0, 0, 0.1)"
+          className="react-flow__minimap"
         />
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
       </ReactFlow>

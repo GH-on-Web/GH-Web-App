@@ -10,8 +10,19 @@
   transition: box-shadow 0.2s;
 }
 
+/* Dark mode styles */
+[data-theme="dark"] .interactive-node {
+  background: #2d2d2d;
+  border-color: #666;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
 .interactive-node:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .interactive-node:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .interactive-node.selected {
@@ -30,6 +41,11 @@
   border-radius: 4px;
 }
 
+[data-theme="dark"] .interactive-node .node-header {
+  color: #e0e0e0;
+  background: #1f1f1f;
+}
+
 .interactive-node .node-nickname {
   display: block;
   white-space: nowrap;
@@ -44,6 +60,11 @@
   margin-top: 6px;
   padding-top: 6px;
   border-top: 1px solid #eee;
+}
+
+[data-theme="dark"] .interactive-node .node-category {
+  color: #999;
+  border-top-color: #404040;
 }
 
 .interactive-node .node-handle {
@@ -84,14 +105,28 @@
   box-sizing: border-box;
 }
 
+[data-theme="dark"] .slider-value-display,
+[data-theme="dark"] .slider-value-input {
+  color: #e0e0e0;
+  background: #1f1f1f;
+}
+
 .slider-value-input {
   border: 2px solid #3498db;
   outline: none;
   cursor: text;
 }
 
+[data-theme="dark"] .slider-value-input {
+  border-color: #5DADE2;
+}
+
 .slider-value-display:hover {
   background: #e9ecef;
+}
+
+[data-theme="dark"] .slider-value-display:hover {
+  background: #2a2a2a;
 }
 
 .slider-input {
@@ -104,6 +139,10 @@
   appearance: none;
   margin: 8px 0;
   cursor: pointer;
+}
+
+[data-theme="dark"] .slider-input {
+  background: #404040;
 }
 
 .slider-input::-webkit-slider-thumb {
@@ -119,9 +158,18 @@
   transition: transform 0.2s, background 0.2s;
 }
 
+[data-theme="dark"] .slider-input::-webkit-slider-thumb {
+  background: #5DADE2;
+  border-color: #2d2d2d;
+}
+
 .slider-input::-webkit-slider-thumb:hover {
   transform: scale(1.2);
   background: #2980b9;
+}
+
+[data-theme="dark"] .slider-input::-webkit-slider-thumb:hover {
+  background: #85C1E9;
 }
 
 .slider-input::-moz-range-thumb {
@@ -134,12 +182,21 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+[data-theme="dark"] .slider-input::-moz-range-thumb {
+  background: #5DADE2;
+  border-color: #2d2d2d;
+}
+
 .slider-range-labels {
   display: flex;
   justify-content: space-between;
   font-size: 10px;
   color: #999;
   margin-top: 4px;
+}
+
+[data-theme="dark"] .slider-range-labels {
+  color: #808080;
 }
 
 /* ============================================ */
@@ -165,7 +222,14 @@
   resize: vertical;
   outline: none;
   background: #fafafa;
+  color: #1a192b;
   box-sizing: border-box;
+}
+
+[data-theme="dark"] .panel-textarea {
+  background: #1f1f1f;
+  border-color: #5DADE2;
+  color: #e0e0e0;
 }
 
 .panel-display {
@@ -177,20 +241,34 @@
   font-family: 'Courier New', monospace;
   font-size: 12px;
   background: #fafafa;
+  color: #1a192b;
   white-space: pre-wrap;
   word-break: break-word;
   cursor: text;
-  transition: background 0.2s;
   box-sizing: border-box;
+}
+
+[data-theme="dark"] .panel-display {
+  background: #1f1f1f;
+  border-color: #404040;
+  color: #e0e0e0;
 }
 
 .panel-display:hover {
   background: #f0f0f0;
 }
 
+[data-theme="dark"] .panel-display:hover {
+  background: #2a2a2a;
+}
+
 .panel-placeholder {
   color: #999;
   font-style: italic;
+}
+
+[data-theme="dark"] .panel-placeholder {
+  color: #808080;
 }
 
 /* ============================================ */
@@ -314,6 +392,11 @@
   border-radius: 10px;
 }
 
+[data-theme="dark"] .click-counter {
+  color: #b0b0b0;
+  background: #1f1f1f;
+}
+
 /* ============================================ */
 /* Number Input Node */
 /* ============================================ */
@@ -339,6 +422,12 @@
   box-sizing: border-box;
 }
 
+[data-theme="dark"] .number-input-field {
+  background: #1f1f1f;
+  border-color: #5DADE2;
+  color: #e0e0e0;
+}
+
 .number-display {
   width: 100%;
   padding: 10px;
@@ -354,9 +443,20 @@
   box-sizing: border-box;
 }
 
+[data-theme="dark"] .number-display {
+  background: #1f1f1f;
+  border-color: #404040;
+  color: #e0e0e0;
+}
+
 .number-display:hover {
   background: #e9ecef;
   border-color: #bbb;
+}
+
+[data-theme="dark"] .number-display:hover {
+  background: #2a2a2a;
+  border-color: #555;
 }
 
 /* ============================================ */
