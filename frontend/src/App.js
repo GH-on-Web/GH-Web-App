@@ -65,9 +65,6 @@ function App() {
                 <Button color="inherit" component={Link} to="/node-parser" size="small">
                   Graph Editor
                 </Button>
-                <Button color="inherit" component={Link} to="/interactive" size="small">
-                  Interactive
-                </Button>
                 <Button color="inherit" component={Link} to="/docs" size="small">
                   Docs
                 </Button>
