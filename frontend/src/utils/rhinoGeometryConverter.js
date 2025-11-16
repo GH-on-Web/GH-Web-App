@@ -47,28 +47,148 @@ const initRhino = async () => {
  * Decodes OpenNURBS geometry from Rhino Compute response
  */
 const decodeRhinoGeometry = (rhino, item) => {
-  // Parse the inner JSON string to get the payload
-  const payload = JSON.parse(item.data);
-  
-  // The payload.data is the base64 OpenNURBS data
-  const base64 = payload.data;
-  
-  // Decode to bytes
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  
-  // Use File3dm.fromByteArray to read the serialized data
-  const doc = rhino.File3dm.fromByteArray(bytes);
-  
-  if (!doc) {
-    console.error('[rhinoConverter] File3dm.fromByteArray returned null');
+  console.log('[rhinoConverter] Raw item structure:', {
+    type: item.type,
+    dataType: typeof item.data,
+    dataPreview: typeof item.data === 'string' ? item.data.substring(0, 100) : item.data
+  });
+
+  try {
+    // Check if item.data is already an object or a string
+    let payload;
+    if (typeof item.data === 'string') {
+      console.log('[rhinoConverter] Parsing item.data as JSON...');
+      payload = JSON.parse(item.data);
+    } else {
+      console.log('[rhinoConverter] item.data is already an object');
+      payload = item.data;
+    }
+
+    console.log('[rhinoConverter] Payload structure:', {
+      keys: Object.keys(payload),
+      hasData: 'data' in payload,
+      dataType: typeof payload.data,
+      dataLength: payload.data?.length
+    });
+
+    // The payload.data should be the base64 OpenNURBS data
+    const base64 = payload.data;
+
+    if (!base64) {
+      console.error('[rhinoConverter] No data field in payload');
+      return null;
+    }
+
+    console.log('[rhinoConverter] Base64 data length:', base64.length);
+    console.log('[rhinoConverter] Base64 preview:', base64.substring(0, 50) + '...');
+
+    // Decode to bytes
+    const binary = atob(base64);
+    console.log('[rhinoConverter] Decoded binary length:', binary.length);
+
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+
+    console.log('[rhinoConverter] Byte array created, length:', bytes.length);
+    console.log('[rhinoConverter] First 20 bytes:', Array.from(bytes.slice(0, 20)));
+
+    // Use File3dm.fromByteArray to read the serialized data
+    console.log('[rhinoConverter] Calling File3dm.fromByteArray...');
+    const doc = rhino.File3dm.fromByteArray(bytes);
+
+    if (!doc) {
+      console.error('[rhinoConverter] File3dm.fromByteArray returned null');
+      console.error('[rhinoConverter] This usually means the data is not in 3dm file format');
+      console.error('[rhinoConverter] Trying alternative: direct geometry decode...');
+
+      // Try decoding as a raw geometry object instead of a file
+      try {
+        // Rhino Compute returns individual geometry objects with version/archive3dm metadata
+        // We need to use the decode method from the geometry class itself
+
+        console.log('[rhinoConverter] Available rhino object methods:', Object.keys(rhino).filter(k => k.includes('decode') || k.includes('Decode')));
+
+        // Try using the type-specific decoder first (e.g., Brep.decode)
+        const geometryType = item.type.split('.').pop(); // Get 'Brep' from 'Rhino.Geometry.Brep'
+        console.log('[rhinoConverter] Trying type-specific decoder for:', geometryType);
+
+        if (rhino[geometryType]) {
+          console.log(`[rhinoConverter] ${geometryType} class available`);
+          console.log(`[rhinoConverter] ${geometryType} methods:`, Object.getOwnPropertyNames(rhino[geometryType]));
+
+          if (typeof rhino[geometryType].decode === 'function') {
+            console.log(`[rhinoConverter] Attempting ${geometryType}.decode with payload object...`);
+            console.log('[rhinoConverter] Payload being passed:', payload);
+
+            try {
+              const geomObject = rhino[geometryType].decode(payload);
+
+              if (geomObject) {
+                console.log(`[rhinoConverter] Successfully decoded as ${geometryType}:`, geomObject.constructor.name);
+
+                // Create a temporary document and add the object to it
+                const tempDoc = new rhino.File3dm();
+                const attributes = new rhino.ObjectAttributes();
+                tempDoc.objects().add(geomObject, attributes);
+
+                console.log('[rhinoConverter] Created temporary document with geometry');
+                return tempDoc;
+              } else {
+                console.error(`[rhinoConverter] ${geometryType}.decode returned null`);
+              }
+            } catch (decodeErr) {
+              console.error(`[rhinoConverter] ${geometryType}.decode threw error:`, decodeErr);
+            }
+          } else {
+            console.error(`[rhinoConverter] ${geometryType}.decode is not available`);
+          }
+        } else {
+          console.error(`[rhinoConverter] ${geometryType} class not found on rhino object`);
+          console.log('[rhinoConverter] Available rhino geometry classes:', Object.keys(rhino).filter(k => k.match(/^[A-Z]/)));
+        }
+
+        // Try CommonObject.decode as fallback
+        if (rhino.CommonObject && typeof rhino.CommonObject.decode === 'function') {
+          console.log('[rhinoConverter] Attempting CommonObject.decode with payload object...');
+          try {
+            const geomObject = rhino.CommonObject.decode(payload);
+
+            if (geomObject) {
+              console.log('[rhinoConverter] Successfully decoded as CommonObject:', geomObject.constructor.name);
+
+              // Create a temporary document and add the object to it
+              const tempDoc = new rhino.File3dm();
+              const attributes = new rhino.ObjectAttributes();
+              tempDoc.objects().add(geomObject, attributes);
+
+              console.log('[rhinoConverter] Created temporary document with geometry');
+              return tempDoc;
+            } else {
+              console.error('[rhinoConverter] CommonObject.decode returned null');
+            }
+          } catch (commonObjErr) {
+            console.error('[rhinoConverter] CommonObject.decode threw error:', commonObjErr);
+          }
+        }
+
+      } catch (e) {
+        console.error('[rhinoConverter] Could not decode geometry:', e);
+        console.error('[rhinoConverter] Error stack:', e.stack);
+      }
+
+      return null;
+    }
+
+    console.log('[rhinoConverter] File3dm successfully created');
+    return doc;
+
+  } catch (err) {
+    console.error('[rhinoConverter] Error in decodeRhinoGeometry:', err);
+    console.error('[rhinoConverter] Stack:', err.stack);
     return null;
   }
-  
-  return doc;
 };
 
 /**
@@ -77,6 +197,17 @@ const decodeRhinoGeometry = (rhino, item) => {
  * @returns {Promise<Array>} Array of geometry objects with vertices and faces
  */
 export const convertRhinoComputeToThreeViewer = async (solveResult) => {
+  console.log('[rhinoConverter] === STARTING CONVERSION ===');
+  console.log('[rhinoConverter] Solve result structure:', {
+    hasValues: !!solveResult?.values,
+    valuesLength: solveResult?.values?.length,
+    valuesPreview: solveResult?.values?.map(v => ({
+      ParamName: v.ParamName,
+      hasInnerTree: !!v.InnerTree,
+      InnerTreeKeys: v.InnerTree ? Object.keys(v.InnerTree) : []
+    }))
+  });
+
   if (!solveResult || !solveResult.values) {
     console.warn('[rhinoConverter] Invalid solve result');
     return [];
@@ -86,12 +217,24 @@ export const convertRhinoComputeToThreeViewer = async (solveResult) => {
   const geometries = [];
 
   for (const param of solveResult.values) {
-    if (!param.InnerTree) continue;
+    console.log('[rhinoConverter] Processing parameter:', param.ParamName);
+
+    if (!param.InnerTree) {
+      console.log('[rhinoConverter] No InnerTree for', param.ParamName);
+      continue;
+    }
 
     for (const key in param.InnerTree) {
       const items = param.InnerTree[key];
-      
+      console.log(`[rhinoConverter] InnerTree key: ${key}, items count: ${items.length}`);
+
       for (const item of items) {
+        console.log('[rhinoConverter] Item:', {
+          type: item.type,
+          hasData: !!item.data,
+          dataType: typeof item.data
+        });
+
         // Check if this is Rhino geometry
         if (item.type && item.data && item.type.startsWith('Rhino.Geometry')) {
           try {
@@ -118,12 +261,28 @@ export const convertRhinoComputeToThreeViewer = async (solveResult) => {
               
               // Convert to mesh if it's a Brep
               if (geom.constructor.name === 'Brep') {
-                const meshes = rhino.Mesh.createFromBrep(geom);
-                if (meshes && meshes.length > 0) {
-                  console.log('[rhinoConverter] Converted Brep to', meshes.length, 'meshes');
-                  
-                  for (let m = 0; m < meshes.length; m++) {
-                    const mesh = meshes[m];
+                console.log('[rhinoConverter] Converting Brep to mesh using face render meshes');
+
+                // Extract render meshes from Brep faces
+                // Note: rhino.Mesh.createFromBrep() does NOT exist in rhino3dm.js
+                // rhino3dm cannot perform meshing operations - we need to extract embedded render meshes
+                const meshes = [];
+                const faces = geom.faces();
+
+                for (let f = 0; f < faces.count; f++) {
+                  const face = faces.get(f);
+                  // Try to get the render mesh for this face
+                  const mesh = face.getMesh(rhino.MeshType.Any);
+
+                  if (mesh) {
+                    meshes.push(mesh);
+                  }
+                }
+
+                if (meshes.length > 0) {
+                  console.log('[rhinoConverter] Extracted', meshes.length, 'render meshes from Brep faces');
+
+                  for (const mesh of meshes) {
                     const threeGeom = convertRhinoMeshToThree(mesh);
                     if (threeGeom) {
                       geometries.push({
@@ -136,6 +295,9 @@ export const convertRhinoComputeToThreeViewer = async (solveResult) => {
                       });
                     }
                   }
+                } else {
+                  console.warn('[rhinoConverter] No render meshes found in Brep.');
+                  console.warn('[rhinoConverter] SOLUTION: Add a Mesh component in Grasshopper before the output component to convert Breps to meshes.');
                 }
               } else if (geom.constructor.name === 'Mesh') {
                 const threeGeom = convertRhinoMeshToThree(geom);
@@ -175,23 +337,47 @@ export const convertRhinoComputeToThreeViewer = async (solveResult) => {
 const convertRhinoMeshToThree = (rhinoMesh) => {
   const vertices = [];
   const indices = [];
-  
+
   // Extract vertices
   for (let i = 0; i < rhinoMesh.vertices().count; i++) {
     const v = rhinoMesh.vertices().get(i);
-    vertices.push(v.x, v.y, v.z);
+
+    // Log first few vertices to debug structure
+    if (i < 5) {
+      console.log(`[rhinoConverter] Vertex ${i}:`, v, `-> [${v[0]}, ${v[1]}, ${v[2]}]`);
+    }
+
+    // rhino3dm vertices might be accessed as array indices [0], [1], [2] instead of .x, .y, .z
+    const x = v[0] !== undefined ? v[0] : v.x;
+    const y = v[1] !== undefined ? v[1] : v.y;
+    const z = v[2] !== undefined ? v[2] : v.z;
+
+    vertices.push(x, y, z);
   }
   
   // Extract faces
   for (let i = 0; i < rhinoMesh.faces().count; i++) {
     const face = rhinoMesh.faces().get(i);
-    
-    if (face.isTriangle) {
-      indices.push(face.a, face.b, face.c);
+
+    // Log first few faces to debug structure
+    if (i < 3) {
+      console.log(`[rhinoConverter] Face ${i}:`, face, `-> [${face[0]}, ${face[1]}, ${face[2]}, ${face[3]}]`);
+    }
+
+    // Faces are arrays [a, b, c, d] where d might equal c for triangles
+    const a = face[0];
+    const b = face[1];
+    const c = face[2];
+    const d = face[3];
+
+    // Check if it's a triangle (d equals c) or quad
+    if (c === d) {
+      // Triangle
+      indices.push(a, b, c);
     } else {
       // Quad - split into two triangles
-      indices.push(face.a, face.b, face.c);
-      indices.push(face.a, face.c, face.d);
+      indices.push(a, b, c);
+      indices.push(a, c, d);
     }
   }
   

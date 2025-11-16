@@ -195,7 +195,8 @@ function SceneContent({ geometry, theme }) {
 
   // Check if this is demo geometry
   if (geometry.type) {
-    console.log('SceneContent: Rendering demo geometry', geometry.type);
+    console.log('[ThreeViewer] ⚠️ RENDERING DEMO/PLACEHOLDER GEOMETRY ⚠️');
+    console.log('[ThreeViewer] Demo geometry type:', geometry.type);
     return (
       <>
         <ambientLight intensity={0.5} />
@@ -214,12 +215,58 @@ function SceneContent({ geometry, theme }) {
   const meshes = Array.isArray(geometry) ? geometry : [geometry];
   console.log('SceneContent: Rendering', meshes.length, 'mesh(es)');
 
+  // Check if the array contains three-objects
+  const hasThreeObjects = meshes.length > 0 && meshes[0].type === 'three-object';
+
+  if (hasThreeObjects) {
+    console.log('SceneContent: Rendering array of Three.js objects');
+
+    // Log details about each object
+    meshes.forEach((item, index) => {
+      const mesh = item.object;
+      if (mesh?.geometry) {
+        const positions = mesh.geometry.attributes.position;
+        const vertexCount = positions ? positions.count : 0;
+        const indexCount = mesh.geometry.index ? mesh.geometry.index.count : 0;
+        console.log(`[ThreeViewer] Object ${index} - Name: "${item.name}", Vertices: ${vertexCount}, Faces: ${indexCount / 3}, Type: ${item.type}`);
+
+        // Log bounding box to check geometry scale
+        mesh.geometry.computeBoundingBox();
+        const bbox = mesh.geometry.boundingBox;
+        if (bbox) {
+          console.log(`[ThreeViewer] Object ${index} - BoundingBox min: [${bbox.min.x}, ${bbox.min.y}, ${bbox.min.z}], max: [${bbox.max.x}, ${bbox.max.y}, ${bbox.max.z}]`);
+        } else {
+          console.log(`[ThreeViewer] Object ${index} - BoundingBox: null`);
+        }
+      }
+    });
+
+    return (
+      <>
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[10, 10, 5]} intensity={1} />
+        <pointLight position={[-10, -10, -5]} intensity={0.5} />
+
+        {meshes.map((item, index) => (
+          <ThreeObject key={index} object={item.object} />
+        ))}
+
+        <Grid
+          args={[10, 10]}
+          cellColor={theme?.palette?.mode === 'dark' ? '#6f6f6f' : '#cccccc'}
+          sectionColor={theme?.palette?.mode === 'dark' ? '#9d9d9d' : '#999999'}
+        />
+      </>
+    );
+  }
+
+  // Default: handle meshes with vertices and faces
   return (
     <>
       <ambientLight intensity={0.5} />
       <directionalLight position={[10, 10, 5]} intensity={1} />
       <pointLight position={[-10, -10, -5]} intensity={0.5} />
-      
+
       {meshes.map((mesh, index) => {
         console.log(`SceneContent: Rendering mesh ${index}`, {
           hasVertices: !!mesh.vertices,
@@ -235,11 +282,11 @@ function SceneContent({ geometry, theme }) {
           />
         );
       })}
-      
-      <Grid 
-        args={[10, 10]} 
-        cellColor={theme?.palette?.mode === 'dark' ? '#6f6f6f' : '#cccccc'} 
-        sectionColor={theme?.palette?.mode === 'dark' ? '#9d9d9d' : '#999999'} 
+
+      <Grid
+        args={[10, 10]}
+        cellColor={theme?.palette?.mode === 'dark' ? '#6f6f6f' : '#cccccc'}
+        sectionColor={theme?.palette?.mode === 'dark' ? '#9d9d9d' : '#999999'}
       />
     </>
   );
