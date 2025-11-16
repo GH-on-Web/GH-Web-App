@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { LiveblocksProvider } from '@liveblocks/react';
-import { AppBar, Toolbar, Typography, Button, Box, Container, ThemeProvider, createTheme, CssBaseline, useMediaQuery } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box, Container, ThemeProvider, createTheme, CssBaseline, useMediaQuery, IconButton, Menu, MenuItem } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import HomePage from './pages/HomePage';
 import WorkspacePage from './pages/WorkspacePage';
 import Workspace3DMPage from './pages/Workspace3DMPage';
@@ -17,6 +18,16 @@ function App() {
   const publicApiKey = process.env.REACT_APP_LIVEBLOCKS_PUBLIC_KEY;
   const { mode } = useThemeStore();
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const [anchorEl, setAnchorEl] = useState(null);
+  const menuOpen = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   const theme = useMemo(() => {
     const themeMode = mode === 'system' ? (prefersDarkMode ? 'dark' : 'light') : mode;
@@ -51,42 +62,58 @@ function App() {
           <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <AppBar position="static">
               <Toolbar variant="dense" sx={{ minHeight: 48 }}>
+                <IconButton
+                  edge="start"
+                  color="inherit"
+                  aria-label="menu"
+                  onClick={handleMenuOpen}
+                  sx={{ mr: 2 }}
+                >
+                  <MenuIcon />
+                </IconButton>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={menuOpen}
+                  onClose={handleMenuClose}
+                  PaperProps={{
+                    sx: {
+                      minWidth: 200,
+                    }
+                  }}
+                >
+                  <MenuItem component={Link} to="/" onClick={handleMenuClose}>
+                    Home
+                  </MenuItem>
+                  <MenuItem component={Link} to="/workspace3dm" onClick={handleMenuClose}>
+                    Workspace 3DM
+                  </MenuItem>
+                  <MenuItem component={Link} to="/node-parser" onClick={handleMenuClose}>
+                    Graph Editor
+                  </MenuItem>
+                  <MenuItem component={Link} to="/compute-test" onClick={handleMenuClose}>
+                    Compute Test
+                  </MenuItem>
+                  <MenuItem component={Link} to="/docs" onClick={handleMenuClose}>
+                    Docs
+                  </MenuItem>
+                </Menu>
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <svg 
-                    width="24" 
-                    height="24" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                     style={{ display: 'inline-block' }}
                   >
-                    <path 
-                      d="M19.35 10.04C18.67 6.59 15.64 4 12 4C9.11 4 6.6 5.64 5.35 8.04C2.34 8.36 0 10.91 0 14C0 17.31 2.69 20 6 20H19C21.76 20 24 17.76 24 15C24 12.36 21.95 10.22 19.35 10.04Z" 
+                    <path
+                      d="M19.35 10.04C18.67 6.59 15.64 4 12 4C9.11 4 6.6 5.64 5.35 8.04C2.34 8.36 0 10.91 0 14C0 17.31 2.69 20 6 20H19C21.76 20 24 17.76 24 15C24 12.36 21.95 10.22 19.35 10.04Z"
                       fill="currentColor"
                       opacity="0.9"
                     />
                   </svg>
                   CloudHopper
                 </Typography>
-                <Button color="inherit" component={Link} to="/" size="small">
-                  Home
-                </Button>
-                <Button color="inherit" component={Link} to="/workspace" size="small">
-                  Workspace
-                </Button>
-                <Button color="inherit" component={Link} to="/workspace3dm" size="small">
-                  Workspace 3DM
-                </Button>
-                <Button color="inherit" component={Link} to="/node-parser" size="small">
-                  Graph Editor
-                </Button>
-                <Button color="inherit" component={Link} to="/compute-test">
-              Compute Test
-            </Button>
-                 
-                <Button color="inherit" component={Link} to="/docs" size="small">
-                  Docs
-                </Button>
                 <ThemeToggle />
               </Toolbar>
             </AppBar>
