@@ -15,6 +15,9 @@ import ThreeViewerRhino from '../components/Viewer3D/ThreeViewerRhino';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { POSITION_SCALE_FACTOR } from '../utils/nodeParser';
 import { convertRhinoComputeToThreeViewer } from '../utils/rhinoGeometryConverter';
+import ScriptLibraryPanel from '../components/ScriptLibrary/ScriptLibraryPanel';
+import SubmitScriptModal from '../components/ScriptLibrary/SubmitScriptModal';
+import { docToCanvasGraph } from '../services/scriptsAPI';
 import exampleData from '../data/exampleGraph.json';
 import exampleDataInteractive from '../data/exampleGraphInteractive.json';
 import testScript1 from '../data/Test-Script-1.json';
@@ -46,7 +49,11 @@ const NodeParserDemoContent = ({ roomId }) => {
   
   // Comments panel state
   const [commentsOpen, setCommentsOpen] = useState(false);
-  
+
+  // Script library + submit modal state
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [isSubmitOpen, setIsSubmitOpen] = useState(false);
+
   // Sample geometry for demonstration
   const [sampleGeometry, setSampleGeometry] = useState(null);
   
@@ -296,6 +303,14 @@ const NodeParserDemoContent = ({ roomId }) => {
     updateGraphData(emptyData);
     setParseError(null);
   };
+
+  // Open a script from the Neo4j library onto the canvas
+  const handleOpenScriptFromDB = useCallback((doc) => {
+    const graphData = docToCanvasGraph(doc);
+    updateGraphData(graphData);
+    setIsLibraryOpen(false);
+    setParseError(null);
+  }, [updateGraphData]);
 
   const handleConnectionsChange = (newConnections) => {
     // Detect format and update accordingly
@@ -911,6 +926,38 @@ const NodeParserDemoContent = ({ roomId }) => {
       {/* Floating action buttons */}
       <div className="demo-floating-controls">
         <button
+          onClick={() => setIsLibraryOpen(true)}
+          style={{
+            backgroundColor: '#1565c0',
+            color: 'white',
+            padding: '8px 16px',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}
+          title="Browse and open scripts from the database"
+        >
+          📚 Library
+        </button>
+        <button
+          onClick={() => setIsSubmitOpen(true)}
+          style={{
+            backgroundColor: '#6a1b9a',
+            color: 'white',
+            padding: '8px 16px',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}
+          title="Save current canvas to the script library"
+        >
+          ⬆ Submit
+        </button>
+        <button
           onClick={handleExportGraph}
           style={{
             backgroundColor: theme.palette.mode === 'dark' ? '#424242' : '#e0e0e0',
@@ -975,6 +1022,22 @@ const NodeParserDemoContent = ({ roomId }) => {
           ▶ Run
         </button>
       </div>
+    {/* Script Library slide-in panel */}
+    <ScriptLibraryPanel
+      isOpen={isLibraryOpen}
+      onClose={() => setIsLibraryOpen(false)}
+      onOpenScript={handleOpenScriptFromDB}
+      theme={theme.palette.mode}
+    />
+
+    {/* Submit / Save-to-DB modal */}
+    <SubmitScriptModal
+      isOpen={isSubmitOpen}
+      onClose={() => setIsSubmitOpen(false)}
+      graph={currentData}
+      theme={theme.palette.mode}
+    />
+
     </div>
   </div>
   );
