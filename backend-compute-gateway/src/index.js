@@ -10,6 +10,8 @@ import ghToJsonRouter from './routes/ghToJson.js';
 import jsonToGhRouter from './routes/jsonToGh.js';
 import testScriptRouter from './routes/testScript.js';
 import versionRouter from './routes/version.js';
+import scriptsRouter from './routes/scripts.js';
+import { initSchema } from './db/driver.js';
 
 const app = express();
 
@@ -23,6 +25,7 @@ app.use('/json-to-gh', jsonToGhRouter);
 app.use('/test-script', testScriptRouter);
 app.use('/grasshopper', grasshopperRouter);
 app.use('/version', versionRouter);
+app.use('/scripts', scriptsRouter);
 
 app.use((err, req, res, next) => {
   console.error('[Error]', err);
@@ -35,6 +38,7 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 4001;
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`backend-compute-gateway listening on port ${PORT}`);
+  await initSchema();
 });

@@ -9,6 +9,10 @@ Copy `.env.example` to `.env` (or set the same variables in your environment). T
 - `RHINO_COMPUTE_URL` – the full base URL for the local Rhino Compute server (e.g., `http://localhost:5000`)
 - `RHINO_COMPUTE_KEY` – optional API key/token for your compute instance
 - `PORT` – optional port override (defaults to `4001`)
+- `NEO4J_URI` – Neo4j Bolt URI (defaults to `bolt://localhost:7687`)
+- `NEO4J_USER` – Neo4j username (defaults to `neo4j`)
+- `NEO4J_PASSWORD` – Neo4j password (defaults to `neo4j`)
+- `NEO4J_DATABASE` – target database name (defaults to `neo4j`)
 
 Once the variables are set, install dependencies and start the server:
 
@@ -85,6 +89,41 @@ npm start       # production mode
   }
   ```
 - Returns: Solve results from test-script.gh
+
+### Script Graph DB Endpoints (Neo4j)
+
+**`POST /scripts`**
+- Ingest a GH JSON graph into Neo4j
+- Body: `{ name, description?, author?, tags?: [], graph: { nodes: [], links: [] } }`
+- Returns: `{ docId, componentCount, wireCount }`
+
+**`GET /scripts`**
+- List all stored documents (summary + component count)
+
+**`GET /scripts/:id`**
+- Fetch a full document: metadata, all components, all wires
+
+**`DELETE /scripts/:id`**
+- Delete a document and all its components/wires
+
+**`GET /scripts/:id/ancestors/:compLocalId?depth=N`**
+- All upstream components feeding into `compLocalId` (default depth 10)
+
+**`GET /scripts/:id/descendants/:compLocalId?depth=N`**
+- All downstream components reachable from `compLocalId`
+
+**`GET /scripts/:id/similar`**
+- Documents sharing the most component types (by GUID) with this script
+
+#### Graph Model
+
+```
+(:GHDocument { id, name, description, author, tags[], created_at })
+(:GHComponent { id, doc_id, local_id, guid, nickname, position_x, position_y, properties_json })
+
+(doc)  -[:HAS_COMPONENT]->  (comp)
+(compA)-[:WIRE { from_param, to_param, order }]->(compB)
+```
 
 ## Architecture
 
