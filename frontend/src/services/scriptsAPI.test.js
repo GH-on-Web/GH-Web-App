@@ -195,13 +195,13 @@ describe('submitScript', () => {
     expect(sentBody.graph.nodes).toHaveLength(1);
   });
 
-  it('sends an empty tags array when tags are omitted', async () => {
+  it('does not send tags field when tags are omitted', async () => {
     mockFetch({ docId: 'x', componentCount: 1, wireCount: 0 });
 
     await submitScript({ name: 'X', graph: payload.graph });
 
     const sentBody = JSON.parse(fetch.mock.calls[0][1].body);
-    // tags not in payload, so undefined is sent — the backend defaults it
+    expect(sentBody.tags).toBeUndefined();
     expect(sentBody.graph).toBeDefined();
   });
 });

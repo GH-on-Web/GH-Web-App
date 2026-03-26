@@ -82,7 +82,7 @@ export default function SubmitScriptModal({ isOpen, onClose, graph, theme }) {
         {/* Header */}
         <div className="ssm-header">
           <span className="ssm-title">Save to Script Library</span>
-          <button className="ssm-close-btn" onClick={handleClose}>✕</button>
+          <button className="ssm-close-btn" onClick={handleClose} aria-label="Close">✕</button>
         </div>
 
         {/* Success screen */}

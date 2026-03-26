@@ -206,6 +206,7 @@ function ScriptCard({ script, isOpening, isDeleting, onOpen, onDelete }) {
           onClick={() => onDelete(script)}
           disabled={isDeleting}
           title="Delete script"
+          aria-label="Delete script"
         >
           {isDeleting ? '…' : '🗑'}
         </button>

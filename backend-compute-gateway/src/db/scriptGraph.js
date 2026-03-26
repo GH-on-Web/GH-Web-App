@@ -19,32 +19,6 @@
 import { session } from './driver.js';
 import { v4 as uuidv4 } from 'uuid';
 
-// ─── helpers ────────────────────────────────────────────────────────────────
-
-function toNative(record, key) {
-  const v = record.get(key);
-  // neo4j Integer → JS number
-  if (neo4jInteger(v)) return v.toNumber();
-  return v;
-}
-
-function neo4jInteger(v) {
-  return v && typeof v === 'object' && 'low' in v && 'high' in v;
-}
-
-function compProps(c) {
-  return {
-    id:             c.id,
-    doc_id:         c.doc_id,
-    local_id:       c.local_id,
-    guid:           c.guid,
-    nickname:       c.nickname,
-    position_x:     c.position_x,
-    position_y:     c.position_y,
-    properties_json: c.properties_json,
-  };
-}
-
 // ─── documents ──────────────────────────────────────────────────────────────
 
 /**
@@ -64,61 +38,65 @@ export async function ingestScript({ name, description = '', author = '', tags =
   const now   = new Date().toISOString();
 
   try {
-    // Build component node list with stable compound ids
-    const components = graph.nodes.map(n => ({
-      id:              `${docId}::${n.id}`,
-      doc_id:          docId,
-      local_id:        n.id,
-      guid:            n.guid || '',
-      nickname:        n.nickname || n.id,
-      position_x:      n.x ?? 0,
-      position_y:      n.y ?? 0,
-      properties_json: n.properties ? JSON.stringify(n.properties) : null,
-    }));
+    const result = await s.executeWrite(async tx => {
+      // Build component node list with stable compound ids
+      const components = graph.nodes.map(n => ({
+        id:              `${docId}::${n.id}`,
+        doc_id:          docId,
+        local_id:        n.id,
+        guid:            n.guid || '',
+        nickname:        n.nickname || n.id,
+        position_x:      n.x ?? 0,
+        position_y:      n.y ?? 0,
+        properties_json: n.properties ? JSON.stringify(n.properties) : null,
+      }));
 
-    // MERGE the document node
-    await s.run(
-      `MERGE (d:GHDocument { id: $id })
-       SET   d.name        = $name,
-             d.description = $description,
-             d.author      = $author,
-             d.tags        = $tags,
-             d.created_at  = $created_at`,
-      { id: docId, name, description, author, tags, created_at: now }
-    );
-
-    // MERGE all component nodes + HAS_COMPONENT edges (batched via UNWIND)
-    await s.run(
-      `UNWIND $components AS c
-       MERGE (comp:GHComponent { id: c.id })
-       SET   comp += c
-       WITH  comp, c
-       MATCH (d:GHDocument { id: c.doc_id })
-       MERGE (d)-[:HAS_COMPONENT]->(comp)`,
-      { components }
-    );
-
-    // MERGE WIRE relationships
-    const wires = graph.links.map((l, i) => ({
-      from_id:    `${docId}::${l.fromNode}`,
-      to_id:      `${docId}::${l.toNode}`,
-      from_param: String(l.fromParam),
-      to_param:   String(l.toParam),
-      order:      i,
-    }));
-
-    if (wires.length > 0) {
-      await s.run(
-        `UNWIND $wires AS w
-         MATCH (a:GHComponent { id: w.from_id })
-         MATCH (b:GHComponent { id: w.to_id })
-         MERGE (a)-[r:WIRE { from_param: w.from_param, to_param: w.to_param }]->(b)
-         SET r.order = w.order`,
-        { wires }
+      // MERGE the document node
+      await tx.run(
+        `MERGE (d:GHDocument { id: $id })
+         SET   d.name        = $name,
+               d.description = $description,
+               d.author      = $author,
+               d.tags        = $tags,
+               d.created_at  = $created_at`,
+        { id: docId, name, description, author, tags, created_at: now }
       );
-    }
 
-    return { docId, componentCount: components.length, wireCount: wires.length };
+      // MERGE all component nodes + HAS_COMPONENT edges (batched via UNWIND)
+      await tx.run(
+        `UNWIND $components AS c
+         MERGE (comp:GHComponent { id: c.id })
+         SET   comp += c
+         WITH  comp, c
+         MATCH (d:GHDocument { id: c.doc_id })
+         MERGE (d)-[:HAS_COMPONENT]->(comp)`,
+        { components }
+      );
+
+      // MERGE WIRE relationships
+      const wires = graph.links.map((l, i) => ({
+        from_id:    `${docId}::${l.fromNode}`,
+        to_id:      `${docId}::${l.toNode}`,
+        from_param: String(l.fromParam),
+        to_param:   String(l.toParam),
+        order:      i,
+      }));
+
+      if (wires.length > 0) {
+        await tx.run(
+          `UNWIND $wires AS w
+           MATCH (a:GHComponent { id: w.from_id })
+           MATCH (b:GHComponent { id: w.to_id })
+           MERGE (a)-[r:WIRE { from_param: w.from_param, to_param: w.to_param }]->(b)
+           SET r.order = w.order`,
+          { wires }
+        );
+      }
+
+      return { docId, componentCount: components.length, wireCount: wires.length };
+    });
+
+    return result;
   } finally {
     await s.close();
   }

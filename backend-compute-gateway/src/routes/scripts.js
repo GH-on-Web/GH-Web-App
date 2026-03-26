@@ -33,8 +33,32 @@ router.post('/', async (req, res, next) => {
     return res.status(400).json({ error: { message: 'graph must have nodes[] and links[]' } });
   }
 
+  // Validate optional scalar fields
+  if (description !== undefined && description !== null && typeof description !== 'string') {
+    return res.status(400).json({ error: { message: 'description must be a string if provided' } });
+  }
+  if (author !== undefined && author !== null && typeof author !== 'string') {
+    return res.status(400).json({ error: { message: 'author must be a string if provided' } });
+  }
+
+  // Normalize tags: default to [], require array when provided, coerce entries to strings
+  let normalizedTags;
+  if (tags === undefined || tags === null) {
+    normalizedTags = [];
+  } else if (Array.isArray(tags)) {
+    normalizedTags = tags.map((t) => String(t));
+  } else {
+    return res.status(400).json({ error: { message: 'tags must be an array if provided' } });
+  }
+
   try {
-    const result = await ingestScript({ name, description, author, tags, graph });
+    const result = await ingestScript({
+      name,
+      description,
+      author,
+      tags: normalizedTags,
+      graph,
+    });
     res.status(201).json(result);
   } catch (err) {
     next(err);
