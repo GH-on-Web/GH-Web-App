@@ -1,0 +1,88 @@
+{
+  "nodes": [
+    {
+      "id": "slider_a",
+      "guid": "57da07bd-ecab-415d-9d86-af36d7073abc",
+      "nickname": "A",
+      "x": 40,
+      "y": 40,
+      "properties": { "Min": 0.0, "Max": 20.0, "Value": 10.0 }
+    },
+    {
+      "id": "slider_b",
+      "guid": "57da07bd-ecab-415d-9d86-af36d7073abc",
+      "nickname": "B",
+      "x": 40,
+      "y": 100,
+      "properties": { "Min": 1.0, "Max": 10.0, "Value": 3.0 }
+    },
+    {
+      "id": "slider_c",
+      "guid": "57da07bd-ecab-415d-9d86-af36d7073abc",
+      "nickname": "C",
+      "x": 40,
+      "y": 160,
+      "properties": { "Min": 0.0, "Max": 1.0, "Value": 0.5 }
+    },
+    {
+      "id": "slider_iter",
+      "guid": "57da07bd-ecab-415d-9d86-af36d7073abc",
+      "nickname": "Iter",
+      "x": 40,
+      "y": 220,
+      "properties": { "Min": 0.0, "Max": 10.0, "Value": 3.0 }
+    },
+    {
+      "id": "int_div",
+      "guid": "54db2568-3441-4ae2-bcef-92c4cc608e11",
+      "nickname": "A\\B",
+      "x": 260,
+      "y": 60
+    },
+    {
+      "id": "blur",
+      "guid": "57e1d392-e3fb-4de9-be98-982854a92351",
+      "nickname": "Blur",
+      "x": 260,
+      "y": 180
+    },
+    {
+      "id": "list_item",
+      "guid": "59daf374-bc21-4a5e-8282-5504fb7ae9ae",
+      "nickname": "Item",
+      "x": 480,
+      "y": 180
+    },
+    {
+      "id": "panel_div",
+      "guid": "59e0b89a-e487-49f8-bab8-b5bab16be14c",
+      "nickname": "DivResult",
+      "x": 480,
+      "y": 40,
+      "properties": { "Text": "Integer division result" }
+    },
+    {
+      "id": "panel_item",
+      "guid": "59e0b89a-e487-49f8-bab8-b5bab16be14c",
+      "nickname": "ItemResult",
+      "x": 700,
+      "y": 180,
+      "properties": { "Text": "Blurred list item" }
+    }
+  ],
+  "links": [
+    { "fromNode": "slider_a",    "fromParam": "0",  "toNode": "int_div",   "toParam": "A" },
+    { "fromNode": "slider_b",    "fromParam": "0",  "toNode": "int_div",   "toParam": "B" },
+
+    { "fromNode": "int_div",     "fromParam": "R",  "toNode": "panel_div", "toParam": "0" },
+
+    { "fromNode": "slider_a",    "fromParam": "0",  "toNode": "blur",      "toParam": "N" },
+    { "fromNode": "slider_c",    "fromParam": "0",  "toNode": "blur",      "toParam": "S" },
+    { "fromNode": "slider_iter", "fromParam": "0",  "toNode": "blur",      "toParam": "I" },
+
+    { "fromNode": "blur",        "fromParam": "N",  "toNode": "list_item", "toParam": "L" },
+    { "fromNode": "slider_a",    "fromParam": "0",  "toNode": "list_item", "toParam": "i" },
+
+    { "fromNode": "list_item",   "fromParam": "I",  "toNode": "panel_item","toParam": "0" }
+  ]
+}

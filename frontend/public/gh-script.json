@@ -1,0 +1,34 @@
+{
+  "nodes": [
+    {
+      "id": "slider1",
+      "type": "Grasshopper.Kernel.Special.GH_NumberSlider, Grasshopper",
+      "nickname": "Height",
+      "x": 100.0,
+      "y": 100.0,
+      "properties": {
+        "Min": 0.0,
+        "Max": 10.0,
+        "Value": 5.0
+      }
+    },
+    {
+      "id": "panel1",
+      "type": "Grasshopper.Kernel.Special.GH_Panel, Grasshopper",
+      "nickname": "Out",
+      "x": 300.0,
+      "y": 100.0,
+      "properties": {
+        "Text": "Result"
+      }
+    }
+  ],
+  "links": [
+    {
+      "fromNode": "slider1",
+      "fromParam": "0",
+      "toNode": "panel1",
+      "toParam": "0"
+    }
+  ]
+}

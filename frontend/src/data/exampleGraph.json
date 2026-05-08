@@ -1,0 +1,179 @@
+{
+  "componentInstances": [
+    {
+      "instanceId": "1",
+      "position": { "x": 100, "y": 100 },
+      "component": {
+        "Guid": "59e0b89a-e487-49f8-bab8-b5bab16be14c",
+        "Name": "Number Slider",
+        "Nickname": "Slider",
+        "Category": "Params",
+        "SubCategory": "Input",
+        "Inputs": [],
+        "Outputs": [
+          {
+            "Name": "Number",
+            "Nickname": "N",
+            "Description": "Slider value",
+            "TypeName": "Number",
+            "DotNetType": "Grasshopper.Kernel.Parameters.Param_Number"
+          }
+        ]
+      }
+    },
+    {
+      "instanceId": "2",
+      "position": { "x": 100, "y": 250 },
+      "component": {
+        "Guid": "59e0b89a-e487-49f8-bab8-b5bab16be14c",
+        "Name": "Number Slider",
+        "Nickname": "Slider",
+        "Category": "Params",
+        "SubCategory": "Input",
+        "Inputs": [],
+        "Outputs": [
+          {
+            "Name": "Number",
+            "Nickname": "N",
+            "Description": "Slider value",
+            "TypeName": "Number",
+            "DotNetType": "Grasshopper.Kernel.Parameters.Param_Number"
+          }
+        ]
+      }
+    },
+    {
+      "instanceId": "3",
+      "position": { "x": 350, "y": 150 },
+      "component": {
+        "Guid": "a0d62394-a118-422d-abb3-6af115c75b25",
+        "Name": "Addition",
+        "Nickname": "A+B",
+        "Category": "Maths",
+        "SubCategory": "Operators",
+        "Inputs": [
+          {
+            "Name": "A",
+            "Nickname": "A",
+            "Description": "First item for addition",
+            "TypeName": "Number",
+            "DotNetType": "Grasshopper.Kernel.Parameters.Param_Number"
+          },
+          {
+            "Name": "B",
+            "Nickname": "B",
+            "Description": "Second item for addition",
+            "TypeName": "Number",
+            "DotNetType": "Grasshopper.Kernel.Parameters.Param_Number"
+          }
+        ],
+        "Outputs": [
+          {
+            "Name": "Result",
+            "Nickname": "R",
+            "Description": "Result of addition",
+            "TypeName": "Number",
+            "DotNetType": "Grasshopper.Kernel.Parameters.Param_Number"
+          }
+        ]
+      }
+    },
+    {
+      "instanceId": "4",
+      "position": { "x": 600, "y": 150 },
+      "component": {
+        "Guid": "e9a3aba0-1646-4d47-9007-acdc35d39b91",
+        "Name": "Multiplicationblablabla",
+        "Nickname": "A×B",
+        "Category": "Maths",
+        "SubCategory": "Operators",
+        "Inputs": [
+          {
+            "Name": "A",
+            "Nickname": "A",
+            "Description": "First item for multiplication",
+            "TypeName": "Number",
+            "DotNetType": "Grasshopper.Kernel.Parameters.Param_Number"
+          },
+          {
+            "Name": "B",
+            "Nickname": "B",
+            "Description": "Second item for multiplication",
+            "TypeName": "Number",
+            "DotNetType": "Grasshopper.Kernel.Parameters.Param_Number"
+          }
+        ],
+        "Outputs": [
+          {
+            "Name": "Result",
+            "Nickname": "R",
+            "Description": "Result of multiplication",
+            "TypeName": "Number",
+            "DotNetType": "Grasshopper.Kernel.Parameters.Param_Number"
+          }
+        ]
+      }
+    },
+    {
+      "instanceId": "5",
+      "position": { "x": 850, "y": 150 },
+      "component": {
+        "Guid": "c552a431-af5b-46a9-a8a4-0fcbc27ef596",
+        "Name": "Panel",
+        "Nickname": "Panel",
+        "Category": "Params",
+        "SubCategory": "Input",
+        "Inputs": [
+          {
+            "Name": "Input",
+            "Nickname": "I",
+            "Description": "Input data",
+            "TypeName": "Generic Data",
+            "DotNetType": "Grasshopper.Kernel.Parameters.Param_GenericObject"
+          }
+        ],
+        "Outputs": [
+          {
+            "Name": "Output",
+            "Nickname": "O",
+            "Description": "Output data",
+            "TypeName": "Generic Data",
+            "DotNetType": "Grasshopper.Kernel.Parameters.Param_GenericObject"
+          }
+        ]
+      }
+    }
+  ],
+  "connections": [
+    {
+      "sourceNodeId": "node-1",
+      "sourceHandleIndex": 0,
+      "targetNodeId": "node-3",
+      "targetHandleIndex": 0
+    },
+    {
+      "sourceNodeId": "node-2",
+      "sourceHandleIndex": 0,
+      "targetNodeId": "node-3",
+      "targetHandleIndex": 1
+    },
+    {
+      "sourceNodeId": "node-3",
+      "sourceHandleIndex": 0,
+      "targetNodeId": "node-4",
+      "targetHandleIndex": 0
+    },
+    {
+      "sourceNodeId": "node-2",
+      "sourceHandleIndex": 0,
+      "targetNodeId": "node-4",
+      "targetHandleIndex": 1
+    },
+    {
+      "sourceNodeId": "node-4",
+      "sourceHandleIndex": 0,
+      "targetNodeId": "node-5",
+      "targetHandleIndex": 0
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+/* FlowCanvas - React Flow Controls and MiniMap Dark Mode Styling */
+
+/* Light mode - Controls */
+.react-flow__controls {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.react-flow__controls:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.react-flow__controls-button {
+  background: #ffffff;
+  border-bottom: 1px solid #eee;
+  color: #222;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.react-flow__controls-button:hover {
+  background: #f0f0f0;
+  transform: scale(1.05);
+}
+
+.react-flow__controls-button:active {
+  background: #e5e5e5;
+  transform: scale(0.98);
+}
+
+.react-flow__controls-button svg {
+  fill: #555;
+  transition: fill 0.2s ease;
+}
+
+/* Light mode - MiniMap */
+.react-flow__minimap {
+  background: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.2s ease;
+}
+
+.react-flow__minimap:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.react-flow__minimap-mask {
+  fill: rgba(255, 255, 255, 0.65);
+}
+
+.react-flow__minimap-node {
+  fill: #999;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+/* Dark mode - Controls */
+[data-theme="dark"] .react-flow__controls {
+  background: #2d2d2d;
+  border: 1px solid #505050;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .react-flow__controls:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .react-flow__controls-button {
+  background: #2d2d2d;
+  border-bottom-color: #404040;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .react-flow__controls-button:hover {
+  background: #3d3d3d;
+  transform: scale(1.05);
+}
+
+[data-theme="dark"] .react-flow__controls-button:active {
+  background: #353535;
+  transform: scale(0.98);
+}
+
+[data-theme="dark"] .react-flow__controls-button svg {
+  fill: #e0e0e0;
+}
+
+/* Dark mode - MiniMap */
+[data-theme="dark"] .react-flow__minimap {
+  background: #2d2d2d;
+  border: 1px solid #505050;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .react-flow__minimap:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .react-flow__minimap-mask {
+  fill: rgba(0, 0, 0, 0.65);
+}
+
+[data-theme="dark"] .react-flow__minimap-node {
+  fill: #777;
+  stroke: #aaa;
+  stroke-width: 1.5px;
+}
+
+/* Dark mode - Background */
+[data-theme="dark"] .react-flow__background {
+  background: #1a1a1a;
+}
+
+[data-theme="dark"] .react-flow__background path {
+  stroke: #404040;
+}
+
+/* Dark mode - Edges */
+[data-theme="dark"] .react-flow__edge-path {
+  stroke: #888;
+}
+
+[data-theme="dark"] .react-flow__edge.selected .react-flow__edge-path {
+  stroke: #4CAF50;
+}
+
+/* Ensure controls stay visible on top and not cut off */
+.react-flow__controls,
+.react-flow__minimap {
+  z-index: 10;
+}
+
+/* Ensure proper spacing from edges */
+.react-flow__controls {
+  margin-bottom: 20px;
+  margin-left: 20px;
+}
+
+.react-flow__minimap {
+  margin-bottom: 20px;
+  margin-right: 20px;
+}
+

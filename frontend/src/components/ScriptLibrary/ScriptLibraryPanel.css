@@ -1,0 +1,474 @@
+/* ── Panel shell ─────────────────────────────────────────────────────────── */
+.script-library-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 360px;
+  z-index: 200;
+  background: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.script-library-panel.open {
+  transform: translateX(0);
+}
+
+.slp-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 199;
+  cursor: default;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.slp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid #e8e8e8;
+  flex-shrink: 0;
+}
+
+.slp-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+  letter-spacing: 0.01em;
+}
+
+.slp-header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.slp-icon-btn {
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+
+.slp-icon-btn:hover:not(:disabled) {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.slp-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ── Search ──────────────────────────────────────────────────────────────── */
+.slp-search-wrap {
+  display: flex;
+  align-items: center;
+  margin: 12px 12px 8px;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0 10px;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+}
+
+.slp-search-wrap:focus-within {
+  border-color: #1565c0;
+  background: #fff;
+}
+
+.slp-search-icon {
+  font-size: 13px;
+  opacity: 0.5;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+.slp-search {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 9px 0;
+  font-size: 13px;
+  color: #333;
+  outline: none;
+}
+
+.slp-search::placeholder {
+  color: #aaa;
+}
+
+.slp-search-clear {
+  background: none;
+  border: none;
+  padding: 4px;
+  font-size: 11px;
+  color: #999;
+  cursor: pointer;
+  border-radius: 3px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.slp-search-clear:hover {
+  color: #555;
+}
+
+/* ── Body ────────────────────────────────────────────────────────────────── */
+.slp-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 12px 8px;
+}
+
+.slp-body::-webkit-scrollbar { width: 4px; }
+.slp-body::-webkit-scrollbar-track { background: transparent; }
+.slp-body::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+/* ── State messages ──────────────────────────────────────────────────────── */
+.slp-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.slp-state-icon {
+  font-size: 28px;
+  opacity: 0.5;
+}
+
+.slp-state-error {
+  color: #c62828;
+}
+
+.slp-state-error .slp-state-icon { opacity: 1; }
+
+.slp-state small {
+  font-size: 11px;
+  color: #aaa;
+  word-break: break-all;
+}
+
+.slp-retry-btn {
+  margin-top: 4px;
+  padding: 6px 16px;
+  border: 1px solid #c62828;
+  border-radius: 6px;
+  background: transparent;
+  color: #c62828;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.slp-retry-btn:hover {
+  background: #fce4ec;
+}
+
+.slp-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e0e0e0;
+  border-top-color: #1565c0;
+  border-radius: 50%;
+  animation: slp-spin 0.7s linear infinite;
+}
+
+@keyframes slp-spin { to { transform: rotate(360deg); } }
+
+/* ── Script card ─────────────────────────────────────────────────────────── */
+.slp-card {
+  background: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 14px 14px 12px;
+  margin-bottom: 10px;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.slp-card:hover {
+  border-color: #bbdefb;
+  box-shadow: 0 2px 8px rgba(21, 101, 192, 0.1);
+}
+
+.slp-card-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.slp-card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slp-card-nodes {
+  font-size: 11px;
+  color: #888;
+  background: #eeeeee;
+  padding: 2px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.slp-card-desc {
+  font-size: 12px;
+  color: #666;
+  margin: 4px 0 8px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.slp-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.slp-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #888;
+}
+
+.slp-meta-icon { font-size: 11px; }
+
+.slp-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.slp-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: #e3f2fd;
+  color: #1565c0;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.slp-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.slp-btn-open {
+  flex: 1;
+  padding: 8px 12px;
+  background: #1565c0;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.slp-btn-open:hover:not(:disabled) {
+  background: #0d47a1;
+  transform: translateY(-1px);
+}
+
+.slp-btn-open:disabled {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+}
+
+.slp-btn-delete {
+  padding: 8px 10px;
+  background: transparent;
+  color: #bbb;
+  border: 1px solid #e0e0e0;
+  border-radius: 7px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  line-height: 1;
+}
+
+.slp-btn-delete:hover:not(:disabled) {
+  background: #fce4ec;
+  color: #c62828;
+  border-color: #ef9a9a;
+}
+
+.slp-btn-delete:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.slp-footer {
+  padding: 8px 16px;
+  border-top: 1px solid #e8e8e8;
+  flex-shrink: 0;
+  min-height: 32px;
+}
+
+.slp-count {
+  font-size: 11px;
+  color: #aaa;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Dark mode
+   ═══════════════════════════════════════════════════════════════════════════ */
+[data-theme="dark"] .script-library-panel {
+  background: #1e1e2e;
+  border-right-color: #333;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .slp-header {
+  border-bottom-color: #333;
+}
+
+[data-theme="dark"] .slp-title {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .slp-icon-btn {
+  color: #aaa;
+}
+
+[data-theme="dark"] .slp-icon-btn:hover:not(:disabled) {
+  background: #2a2a3e;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .slp-search-wrap {
+  background: #2a2a3e;
+  border-color: #444;
+}
+
+[data-theme="dark"] .slp-search-wrap:focus-within {
+  border-color: #5c8de8;
+  background: #1e1e2e;
+}
+
+[data-theme="dark"] .slp-search {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .slp-search::placeholder {
+  color: #555;
+}
+
+[data-theme="dark"] .slp-search-clear {
+  color: #555;
+}
+
+[data-theme="dark"] .slp-search-clear:hover {
+  color: #aaa;
+}
+
+[data-theme="dark"] .slp-body::-webkit-scrollbar-thumb {
+  background: #444;
+}
+
+[data-theme="dark"] .slp-state {
+  color: #666;
+}
+
+[data-theme="dark"] .slp-spinner {
+  border-color: #444;
+  border-top-color: #5c8de8;
+}
+
+[data-theme="dark"] .slp-card {
+  background: #252535;
+  border-color: #333;
+}
+
+[data-theme="dark"] .slp-card:hover {
+  border-color: #5c8de8;
+  box-shadow: 0 2px 8px rgba(92, 141, 232, 0.15);
+}
+
+[data-theme="dark"] .slp-card-name {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .slp-card-nodes {
+  background: #333;
+  color: #888;
+}
+
+[data-theme="dark"] .slp-card-desc {
+  color: #888;
+}
+
+[data-theme="dark"] .slp-meta-item {
+  color: #666;
+}
+
+[data-theme="dark"] .slp-tag {
+  background: #1a2a4a;
+  color: #7ab3f5;
+}
+
+[data-theme="dark"] .slp-btn-open {
+  background: #1e4a9e;
+}
+
+[data-theme="dark"] .slp-btn-open:hover:not(:disabled) {
+  background: #1565c0;
+}
+
+[data-theme="dark"] .slp-btn-delete {
+  color: #555;
+  border-color: #333;
+}
+
+[data-theme="dark"] .slp-btn-delete:hover:not(:disabled) {
+  background: #3a1a1a;
+  color: #ef5350;
+  border-color: #5a2a2a;
+}
+
+[data-theme="dark"] .slp-footer {
+  border-top-color: #333;
+}
+
+[data-theme="dark"] .slp-count {
+  color: #555;
+}

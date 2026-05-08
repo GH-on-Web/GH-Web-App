@@ -1,0 +1,80 @@
+{
+  "nodes": [
+    {
+      "id": "slider_x",
+      "guid": "57da07bd-ecab-415d-9d86-af36d7073abc",
+      "nickname": "X",
+      "x": 40,
+      "y": 40,
+      "properties": { "Min": -10.0, "Max": 10.0, "Value": 2.0 }
+    },
+    {
+      "id": "slider_y",
+      "guid": "57da07bd-ecab-415d-9d86-af36d7073abc",
+      "nickname": "Y",
+      "x": 40,
+      "y": 100,
+      "properties": { "Min": -10.0, "Max": 10.0, "Value": 1.0 }
+    },
+    {
+      "id": "slider_z",
+      "guid": "57da07bd-ecab-415d-9d86-af36d7073abc",
+      "nickname": "Z",
+      "x": 40,
+      "y": 160,
+      "properties": { "Min": -10.0, "Max": 10.0, "Value": 0.0 }
+    },
+    {
+      "id": "slider_r",
+      "guid": "57da07bd-ecab-415d-9d86-af36d7073abc",
+      "nickname": "R",
+      "x": 40,
+      "y": 220,
+      "properties": { "Min": 0.1, "Max": 10.0, "Value": 3.0 }
+    },
+    {
+      "id": "pt",
+      "guid": "3581f42a-9592-4549-bd6b-1c0fc39d067b",
+      "nickname": "Pt",
+      "x": 260,
+      "y": 100
+    },
+    {
+      "id": "box",
+      "guid": "28061aae-04fb-4cb5-ac45-16f3b66bc0a4",
+      "nickname": "Box",
+      "x": 460,
+      "y": 60
+    },
+    {
+      "id": "sphere",
+      "guid": "dabc854d-f50e-408a-b001-d043c7de151d",
+      "nickname": "Sph",
+      "x": 460,
+      "y": 180
+    },
+    {
+      "id": "sdiff",
+      "guid": "fab11c30-2d9c-4d15-ab3c-2289f1ae5c21",
+      "nickname": "SDiff",
+      "x": 680,
+      "y": 120
+    }
+  ],
+  "links": [
+    { "fromNode": "slider_x", "fromParam": "0",  "toNode": "pt",     "toParam": "X" },
+    { "fromNode": "slider_y", "fromParam": "0",  "toNode": "pt",     "toParam": "Y" },
+    { "fromNode": "slider_z", "fromParam": "0",  "toNode": "pt",     "toParam": "Z" },
+
+    { "fromNode": "pt",       "fromParam": "Pt", "toNode": "sphere", "toParam": "B" },
+    { "fromNode": "slider_r", "fromParam": "0",  "toNode": "sphere", "toParam": "R" },
+
+    { "fromNode": "pt",       "fromParam": "Pt", "toNode": "box",    "toParam": "B" },
+    { "fromNode": "slider_r", "fromParam": "0",  "toNode": "box",    "toParam": "X" },
+    { "fromNode": "slider_r", "fromParam": "0",  "toNode": "box",    "toParam": "Y" },
+    { "fromNode": "slider_r", "fromParam": "0",  "toNode": "box",    "toParam": "Z" },
+
+    { "fromNode": "sphere",   "fromParam": "S",  "toNode": "sdiff",  "toParam": "A" },
+    { "fromNode": "box",      "fromParam": "B",  "toNode": "sdiff",  "toParam": "B" }
+  ]
+}
